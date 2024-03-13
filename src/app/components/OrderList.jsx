@@ -13,7 +13,10 @@ import {
   TableCell,
   Paper,
   Pagination,
+  Accordion, AccordionSummary, AccordionDetails,
+  CircularProgress,
 } from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Image from "next/image";
 import Swal from "sweetalert2";
 import { useSnackbar } from "../SnackbarProvider";
@@ -29,297 +32,115 @@ import FormControl from "@mui/material/FormControl";
 // import Select from '@mui/material/Select';
 import MenuItem from "@mui/material/MenuItem";
 
-import axios from "axios";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-
-// const validationSchema = Yup.object({
-//   categoryName: Yup.string().required('OrderList Name is required'),
-//   category_no: Yup.number().required('OrderList No is required'),
-//    image: Yup.mixed().required('Image is required'),
-// });
+import axios from "../../../axios";
 
 const OrderList = () => {
-  const [driverData, setDriverData] = useState([]);
-  const [dialogData, setDialogData] = useState([]);
-  const [outObjIdD, setOutObjIdD] = useState("");
-  const [userId, setUserId] = useState("");
-
-  const [orderData, setOrderData] = useState([]);
-  const [selectValueA, setSelectValueA] = useState("");
-
-  const [open, setOpen] = useState(false);
-  const [scroll, setScroll] = useState("paper");
 
   const { openSnackbar } = useSnackbar();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleClickOpen = (scrollType) => () => {
-    setOpen(true);
-    setScroll(scrollType);
+  const [activeTab, setActiveTab] = useState('ALL ORDERS');
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const [allOrdersData, setAllOrdersData] = useState([])
+  useEffect(() => {
+    fetchAllOrderData();
+  }, [activeTab]);
+
+  const fetchAllOrderData = useCallback(
+    () => {
+      setIsLoading(true);
+      axios.get(`/api/order?order_status=${activeTab}`, {
+        headers: {
+          Authorization: localStorage.getItem('mykanjeeAdminToken')
+        }
+      })
+        .then((res) => {
+          if (res.data.status === "success") {
+            setAllOrdersData(res.data.data)
+          } else if (res.data.message === 'Session expired') {
+            openSnackbar(res.data.message, 'error');
+            router.push('/login')
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          if (err.response && err.response.data.statusCode === 400) {
+            router.push('/login')
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    },
+    [activeTab],
+  )
+
 
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
-  const totalRows = orderData.length;
+  const totalRows = allOrdersData.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredRows = orderData.filter((e) =>
-    e?.nameOfUser?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const paginatedRows = filteredRows.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
+  const filteredRows = allOrdersData.filter((e) =>
+    e?.order_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const descriptionElementRef = useRef(null);
-  useEffect(() => {
-    if (open) {
-      const { current: descriptionElement } = descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
-  }, [open]);
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex);
 
-  const handleClick = (data, outObjId, userId) => {
-    // console.log("outObjId",outObjId);
-
-    setUserId(userId)
-    setOpen(true);
-    setDialogData(data);
-    setOutObjIdD(outObjId);
-  }; 
-  
-
-  const options = [
-    { id: 1, label: "Pending", value: "pending" },
-    { id: 2, label: "Shipped", value: "shipped" },
-    { id: 3, label: "Delivered", value: "delivered" },
-    { id: 4, label: "Rejected", value: "rejected" },
-    { id: 5, label: "Accepted", value: "accepted" },
-  ];
-
-  const handleOrderChange = async (value, id) => {
-    // setSelectedOption(value)
-    console.log("djjdjdjdj", value?.target?.value);
-
-    await axios
-      .put(
-        "http://localhost:3000/auth/checkout-update",
-        {
-          status: value?.target?.value,
-          checkoutId: id,
-          checkoutObjId: outObjIdD,
-        },
-        {
-          headers: {
-            // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-            authorization: localStorage.getItem("logintoken"), // Add any authentication headers if needed
-          },
-        }
-      )
-      .then((response) => {
-        // Handle success
-        console.log("Response:", response);
-        getOrderApi();
-        openSnackbar("Status changed successfully", "success");
-      })
-      .catch((error) => {
-        // Handle error
-        console.error("Error:", error);
-      });
-  };
-
-  const getOrderApi = () => {
-    axios
-      .get("http://localhost:3000/auth/checkout-get-all", {
-        headers: {
-          authorization: localStorage.getItem("logintoken"),
-        },
-      })
-      .then(function (response) {
-        // handle success
-
-        console.log("responseHH", response);
-
-        setOrderData(response.data.data);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  };
-
-
-  useEffect(() => {
-    getOrderApi();
-  }, []);
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleTaxInvoices = async (sellerId) => {
-    // outObjIdD
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:3000/auth/invoice?checkoutId=${outObjIdD}&sellerId=${sellerId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: localStorage.getItem("logintoken"),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "tax_invoice.pdf");
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } catch (error) {
-      console.error("Error downloading invoice:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  // const [isLoading, setIsLoading] = useState(false);
-
-  const handleShipInvoices = async (sellerId) => {
-    // outObjIdD
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:3000/auth/shipping-invoice?checkoutId=${outObjIdD}&sellerId=${sellerId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: localStorage.getItem("logintoken"),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "ship_invoice.pdf");
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } catch (error) {
-      console.error("Error downloading invoice:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getDriverApi = () => {
-    axios
-      .get("http://localhost:3000/auth/get-all/driver", {
-        // headers: {
-        //   'authorization': localStorage.getItem('logintoken')},
-      })
-      .then(function (response) {
-        // handle success
-        setDriverData(response.data);
-
-        console.log("drivergetdata", response.data);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  };
-
-  useEffect(() => {
-    getDriverApi();
-  }, []);
-
-  const handleDriver = async (selectValue, data) => {
-  setSelectValueA(selectValue)
-    //userId
-    console.log("handleDriver",data , selectValue);
-    
-  
-    await axios
-      .post(
-        "http://localhost:3000/auth/assign-driver",
-        {
-          userId:userId,
-          sellerId:data?.sellerId,
-          productId:data?.productId,
-          orderId:data?.sellerId,
-          quantity:data?.quantity,
-          driverId:selectValue
-        },
-        {
-          headers: {
-            // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-            authorization: localStorage.getItem("logintoken"), // Add any authentication headers if needed
-          },
-        }
-      )
-      .then((response) => {
-        // Handle success
-        console.log("ResponseAA:", response);
-        //   handleOpen()
-        openSnackbar("reason updated successfully", "success");
-      })
-      .catch((error) => {
-        // Handle error
-        console.error("Error:", error);
-      });
-    
-    
-    
-      await axios
-      .put(
-        "http://localhost:3000/auth/checkout-update",
-        {
-          driverId:selectValue,
-          checkoutId: data._id,
-          checkoutObjId: outObjIdD,
-        },
-        {
-          headers: {
-            // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-            authorization: localStorage.getItem("logintoken"), // Add any authentication headers if needed
-          },
-        }
-      )
-      .then((response) => {
-        // Handle success
-        console.log("Response:", response);
-        getOrderApi();
-        openSnackbar("Status changed successfully", "success");
-      })
-      .catch((error) => {
-        // Handle error
-        console.error("Error:", error);
-      });
-  };
+  const convertInRupee = (number) => {
+    return number.toLocaleString('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
 
   return (
     <>
-      <div className="px-[20px]  container mx-auto">
+      <div className="px-[20px]  container mx-auto overflow-y-scroll">
         <div className=" py-[10px] flex flex-col space-y-5">
           <div className="flex flex-col space-y-1">
             <span className="text-[30px] text-[#101828] font-[500]">
               Order&apos;s List
             </span>
             {/* <span className='text-[#667085] font-[400] text-[16px]'>Effortlessly organize your category offerings with intuitive Category Setup for a seamless and structured e-commerce experience.</span> */}
+          </div>
+
+          <div className='grid grid-cols-3 gap-4 py-[20px]'>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'ALL ORDERS' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('ALL ORDERS')}>
+              <div className='flex justify-between items-center'>
+                <span>All Orders</span>
+              </div>
+            </div>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'NEW ORDERS' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('NEW ORDERS')}>
+              <div className='flex justify-between items-center'>
+                <span>New Orders</span>
+              </div>
+            </div>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'ACCEPTED ORDERS' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('ACCEPTED ORDERS')}>
+              <div className='flex justify-between items-center'>
+                <span>Accepted Orders</span>
+              </div>
+            </div>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'REJECTED ORDERS' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('REJECTED ORDERS')}>
+              <div className='flex justify-between items-center'>
+                <span>Rejected Orders</span>
+              </div>
+            </div>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'COMPLETED ORDERS' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('COMPLETED ORDERS')}>
+              <div className='flex justify-between items-center'>
+                <span>Completed Orders</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col space-y-1 border border-[#EAECF0] rounded-[8px] p-[10px]">
@@ -329,9 +150,8 @@ const OrderList = () => {
                   Order&apos;s Data
                 </span>
                 {/*-------------------------------------------------------------------- {categoryData.length} */}
-                <span className="px-[10px] py-[5px] bg-[#FCF8EE] rounded-[16px] text-[12px] text-[#A1853C]">
-                  {" "}
-                  products
+                <span className="px-[10px] py-[5px] bg-[#ac87bf] rounded-[16px] text-[12px] text-[#fff]">
+                  {allOrdersData.length} Orders
                 </span>
               </div>
               <div className="flex items-center space-x-3 inputText w-[50%]">
@@ -356,39 +176,99 @@ const OrderList = () => {
                     <TableRow className="!bg-[#F9FAFB]">
                       <TableCell style={{ minWidth: 80 }}>SL no</TableCell>
                       <TableCell style={{ minWidth: 200 }}>Order ID</TableCell>
-                      <TableCell style={{ minWidth: 200 }}>
-                        {" "}
-                        User Name
-                      </TableCell>
-                      <TableCell style={{ minWidth: 20 }}>Action </TableCell>
+                      <TableCell style={{ minWidth: 200 }}>User Name</TableCell>
+                      <TableCell style={{ minWidth: 150 }}>Total Cgst</TableCell>
+                      <TableCell style={{ minWidth: 150 }}>Total Igst</TableCell>
+                      <TableCell style={{ minWidth: 150 }}>Total Sgst</TableCell>
+                      <TableCell style={{ minWidth: 150 }}>Total Shipping</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>Total Product Amount</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>total Amount</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>Action </TableCell>
                     </TableRow>
                   </TableHead>
 
-                  <TableBody>
-                    {paginatedRows
-                      .filter((item) => item)
-                      .map((elem, i) => {
-                        return (
-                          <TableRow key={i}>
-                            <TableCell>{i + 1}</TableCell>
-                            <TableCell> {elem?.orderId}</TableCell>
-                            <TableCell> {elem?.nameOfUser}</TableCell>
-                            <TableCell>
-                              <Button
-                                onClick={() =>handleClick(elem?.productDetails, elem._id,elem?.userId)
-                                }
-                              >
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-
-                  {/* <TableRow>
-                        <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No product found</TableCell>
-                      </TableRow> */}
+                  {isLoading ? (
+                    <div className="h-[400px] flex justify-center w-full">
+                      <CircularProgress />
+                    </div>
+                  ) :
+                    <>
+                      {filteredRows.length > 0 ?
+                        <TableBody>
+                          {paginatedRows
+                            .filter((item) => item)
+                            .map((elem, i) => {
+                              return (
+                                <TableRow key={i}>
+                                  <TableCell>{i + 1}</TableCell>
+                                  <TableCell>
+                                    <Accordion className="custom-accordion">
+                                      <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon />}
+                                        aria-controls="panel1a-content"
+                                        id="panel1a-header"
+                                        className="p-[0px]"
+                                      >
+                                      <div className="flex items-center justify-between w-full">
+                                        {elem?.order_id}
+                                        <span className="text-[10px] font-[600]">Click to Expand / Hide Tab</span>
+                                      </div>
+                                      </AccordionSummary>
+                                      <AccordionDetails className="p-[0px]">
+                                      <Paper>
+                                        <Table
+                                          component={Paper}
+                                          sx={{ height: "100%", width: "100%" }}>
+                                          <TableHead>
+                                            <TableRow>
+                                              <TableCell style={{ minWidth: 150 }}>Product</TableCell>
+                                              <TableCell style={{ minWidth: 150 }}>Category</TableCell>
+                                              <TableCell style={{ minWidth: 150 }}>Total CGST</TableCell>
+                                              <TableCell style={{ minWidth: 150 }}>Total IGST</TableCell>
+                                              <TableCell style={{ minWidth: 150 }}>Total SGST</TableCell>
+                                              <TableCell style={{ minWidth: 150 }}>Total Price</TableCell>
+                                            </TableRow>
+                                          </TableHead>
+                                          <TableBody>
+                                            {elem.order_details.map((detail, index) => (
+                                              <TableRow key={index}>
+                                                <TableCell>{detail.product.display_name}</TableCell>
+                                                <TableCell>{detail.product.category.category_name}</TableCell>
+                                                <TableCell>{convertInRupee(detail.total_cgst)}</TableCell>
+                                                <TableCell>{convertInRupee(detail.total_igst)}</TableCell>
+                                                <TableCell>{convertInRupee(detail.total_sgst)}</TableCell>
+                                                <TableCell>{convertInRupee(detail.total_price)}</TableCell>
+                                              </TableRow>
+                                            ))}
+                                          </TableBody>
+                                        </Table>
+                                      </Paper>
+                                      </AccordionDetails>
+                                    </Accordion>
+                                  </TableCell>
+                                  <TableCell> {convertInRupee(elem?.user.fullname)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_cgst)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_igst)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_sgst)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_shipping)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_product_amount)}</TableCell>
+                                  <TableCell> {convertInRupee(elem?.total_amount)}</TableCell>
+                                  <TableCell>
+                                    <div className='flex items-center px-[10px] py-[5px] bg-[#ECFDF3] rounded-[16px] justify-center cursor-pointer'>
+                                      <span className='text-[#027A48] text-[12px] font-[500]'>Assign to Delivery</span>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                        :
+                        <TableRow>
+                          <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No Orders found</TableCell>
+                        </TableRow>
+                      }
+                    </>
+                  }
                 </Table>
               </TableContainer>
             </Paper>
@@ -405,7 +285,7 @@ const OrderList = () => {
             )}
           </div>
 
-          <Dialog
+          {/* <Dialog
             open={open}
             onClose={handleClose}
             scroll={scroll}
@@ -569,7 +449,7 @@ const OrderList = () => {
             <DialogActions>
               <Button onClick={handleClose}>Back</Button>
             </DialogActions>
-          </Dialog>
+          </Dialog> */}
         </div>
       </div>
     </>

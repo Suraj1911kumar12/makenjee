@@ -320,13 +320,13 @@ const VendorDetails = () => {
                                 )}
 
                               <TableCell>
-                                {elem?.vendorRegisterShopName}
+                                {elem?.vendor?.shop_name}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendorRegisterMobileNo}
+                                {elem?.vendor_details.mobile}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendorRegisterNameOfBuisness}
+                                {elem?.vendor_details.bussiness_name}
                               </TableCell>
 
                               <TableCell>

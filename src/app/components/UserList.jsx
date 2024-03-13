@@ -20,50 +20,73 @@ import { useSnackbar } from "../SnackbarProvider";
 
 // import LoadingSpinner from '../LoadingSpinner';
 
-import axios from "axios";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-
-// const validationSchema = Yup.object({
-//   categoryName: Yup.string().required('UserList Name is required'),
-//   category_no: Yup.number().required('UserList No is required'),
-//    image: Yup.mixed().required('Image is required'),
-// });
+import axios from "../../../axios";
+import { useRouter } from "next/navigation";
 
 const UserList = () => {
-  const [userData, setUserData] = useState([]);
 
+  const { openSnackbar } = useSnackbar();
+  const router = useRouter()
+
+  // ----------------------------------------------Fetch Category section Starts-----------------------------------------------------
+  const [userData, setUserData] = useState([])
+
+  useEffect(() => {
+    let unmounted = false;
+    if (!unmounted) {
+      fetchUserData()
+    }
+
+    return () => { unmounted = true };
+  }, [])
+
+  const fetchUserData = useCallback(
+    () => {
+      axios.get("/api/user/fetch-users?type=USER", {
+        headers: {
+          Authorization: localStorage.getItem('mykanjeeAdminToken')
+        }
+      })
+        .then((res) => {
+          if (res.data.code == 200) {
+            setUserData(res.data.data)
+          } else if (res.data.message === 'Session expired') {
+            openSnackbar(res.data.message, 'error');
+            router.push('/login')
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          if (err.response && err.response.data.statusCode === 400) {
+            router.push('/login')
+          }
+        })
+    },
+    [],
+  )
+
+  // ----------------------------------------------Fetch Category section Ends-----------------------------------------------------
+
+  // ----------------------------------------------Pagination and Search Query section Starts-----------------------------------------------------
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const totalRows = userData.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
   const [searchQuery, setSearchQuery] = useState("");
+
   const filteredRows = userData.filter((e) =>
-    e?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    e.fullname.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const paginatedRows = filteredRows.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
-  useEffect(() => {
-    axios
-      .get("http://103.174.103.122:3000/auth/get-all/users", {
-        // headers: {
-        //   'authorization': localStorage.getItem('logintoken')},
-      })
-      .then(function (response) {
-        // handle success
-        setUserData(response.data);
-        console.log("responseqq", response.data);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  }, []);
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex);
+
+  // ----------------------------------------------Pagination and Search Query section ENDS-----------------------------------------------------
 
   return (
     <>
@@ -76,28 +99,27 @@ const UserList = () => {
             {/* <span className='text-[#667085] font-[400] text-[16px]'>Effortlessly organize your category offerings with intuitive Category Setup for a seamless and structured e-commerce experience.</span> */}
           </div>
 
-          <div className="flex flex-col space-y-1 border border-[#EAECF0] rounded-[8px] p-[10px]">
+          <div className="flex flex-col space-y-3 border border-[#EAECF0] rounded-[8px] p-[10px]">
             <div className="flex items-center justify-between">
               <div className="flex space-x-2 items-center">
                 <span className="text-[18px] font-[500] text-[#101828]">
                   User&apos;s Data
                 </span>
                 {/*-------------------------------------------------------------------- {categoryData.length} */}
-                <span className="px-[10px] py-[5px] bg-[#FCF8EE] rounded-[16px] text-[12px] text-[#A1853C]">
-                  
-                  category
+                <span className="px-[10px] py-[5px] bg-[#ac87bf] rounded-[16px] text-[12px] text-[#fff]">
+                  {userData.length} Users
                 </span>
               </div>
               <div className='flex items-center space-x-3 inputText w-[50%]'>
-                  <IoSearch className='text-[20px]' />
-                  <input
-                    type='text'
-                    className='outline-none focus-none w-full'
-                    placeholder='Search Category Name here'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+                <IoSearch className='text-[20px]' />
+                <input
+                  type='text'
+                  className='outline-none focus-none w-full'
+                  placeholder='Search User Name here'
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
 
             <Paper>
@@ -109,38 +131,33 @@ const UserList = () => {
                   <TableHead>
                     <TableRow className="!bg-[#F9FAFB]">
                       <TableCell style={{ minWidth: 80 }}>SL no</TableCell>
-                      <TableCell style={{ minWidth: 80 }}>Id</TableCell>
                       <TableCell style={{ minWidth: 200 }}> Name</TableCell>
 
-                      <TableCell style={{ minWidth: 150 }}>Role</TableCell>
-                      <TableCell style={{ minWidth: 200 }}>User Name</TableCell>
-                      {/* <TableCell style={{ minWidth: 50 }}>Status</TableCell> */}
-                      {/* <TableCell style={{ minWidth: 50 }}>Change Status</TableCell> */}
-                      {/* <TableCell style={{ minWidth: 50 }}>Edit</TableCell>
-                      
-                        <TableCell style={{ minWidth: 50 }}>Delete</TableCell> */}
+                      <TableCell style={{ minWidth: 150 }}>Email</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>Phone</TableCell>
                     </TableRow>
                   </TableHead>
 
+                  {filteredRows.length > 0 ?
                   <TableBody>
                     {paginatedRows
                       .filter((e) => e)
                       .map((elem, i) => {
                         return (
                           <TableRow key={i}>
-                            <TableCell>{i + 1}</TableCell>
-                            <TableCell>{elem?._id}</TableCell>
-                            <TableCell>{elem?.name}</TableCell>
-                            <TableCell>{elem?.role}</TableCell>
-                            <TableCell>{elem?.userName}</TableCell>
+                            <TableCell>{startIndex+ i + 1}</TableCell>
+                            <TableCell>{elem?.fullname}</TableCell>
+                            <TableCell>{elem?.email}</TableCell>
+                            <TableCell>{elem?.phone}</TableCell>
                           </TableRow>
                         );
                       })}
                   </TableBody>
-
-                  {/* <TableRow>
-                        <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No product found</TableCell>
-                      </TableRow> */}
+                    :
+                  <TableRow>
+                        <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No User found</TableCell>
+                      </TableRow>
+                  }
                 </Table>
               </TableContainer>
             </Paper>

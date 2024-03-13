@@ -107,13 +107,13 @@ input::file-selector-button {
 }
 
 .leftMenuHover:hover{
-  background-color: #e1cd95;
+  background-color: #ac87bf70;
   color: #fff;
   transition: 0.2s;
 }
 
 .activeLeftMenu{
-  background-color: #cfaa4c;
+  background-color: #ac87bf;
   transition: 0.3s;
   color: #fff;
 }
@@ -198,4 +198,9 @@ input::file-selector-button {
   width: 100%;
   object-fit: cover;
   border-radius: 5px;
+}
+
+.custom-accordion {
+ box-shadow: none;
+ padding: 0px;
 }

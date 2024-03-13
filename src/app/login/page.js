@@ -43,7 +43,6 @@ const Page = () => {
         event.preventDefault();
         try {
             const response = await axios.post('/api/auth/admin-login', {
-                role_id: adminRole.id,
                 username : userName, 
                 password
             });

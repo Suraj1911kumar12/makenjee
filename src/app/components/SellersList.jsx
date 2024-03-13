@@ -1,286 +1,179 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
-import Switch from '@mui/material/Switch';
-import { TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Paper, Pagination } from '@mui/material';
-import Image from 'next/image';
-import Swal from 'sweetalert2'
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { useSnackbar } from '../SnackbarProvider';
+import Switch from "@mui/material/Switch";
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  Pagination,
+} from "@mui/material";
+import Image from "next/image";
+import Swal from "sweetalert2";
+import { useSnackbar } from "../SnackbarProvider";
 
-import  axios  from "axios";
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+// import LoadingSpinner from '../LoadingSpinner';
 
-// const validationSchema = Yup.object({
-//   categoryName: Yup.string().required('SellerList Name is required'),
-//   category_no: Yup.number().required('SellerList No is required'),
-//    image: Yup.mixed().required('Image is required'),
-// });
+import axios from "../../../axios";
+import { useRouter } from "next/navigation";
 
-const SellerList = () => {
-  const  {openSnackbar}  = useSnackbar()
-    const [inputValue, setInputValue] = useState('');
-    const [open, setOpen] = useState(false);
-    const [valToggle, setValToggle] = useState(false);
-    const [idCloseDialogue, setIdCloseDialogue] = useState("");
-    const [valCloseDialogue, setValCloseDialogue] = useState("");
- 
-    const handleOpen = () => setOpen(!open);
+const SellersList = () => {
 
-    const [sellerData, setSellerData] = useState([])
-  // const [openDialogue, setOpenDialogue] = useState(false)
-  
+  const { openSnackbar } = useSnackbar();
+  const router = useRouter()
 
+  // ----------------------------------------------Fetch Category section Starts-----------------------------------------------------
+  const [sellerData, setSellerData] = useState([])
 
+  useEffect(() => {
+    let unmounted = false;
+    if (!unmounted) {
+      fetchSellerData()
+    }
 
+    return () => { unmounted = true };
+  }, [])
+
+  const fetchSellerData = useCallback(
+    () => {
+      axios.get("/api/user/fetch-users?type=SELLER", {
+        headers: {
+          Authorization: localStorage.getItem('mykanjeeAdminToken')
+        }
+      })
+        .then((res) => {
+          if (res.data.code == 200) {
+            setSellerData(res.data.data)
+          } else if (res.data.message === 'Session expired') {
+            openSnackbar(res.data.message, 'error');
+            router.push('/login')
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          if (err.response && err.response.data.statusCode === 400) {
+            router.push('/login')
+          }
+        })
+    },
+    [],
+  )
+
+  // ----------------------------------------------Fetch Category section Ends-----------------------------------------------------
+
+  // ----------------------------------------------Pagination and Search Query section Starts-----------------------------------------------------
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const totalRows = sellerData.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
   const [searchQuery, setSearchQuery] = useState("");
+
   const filteredRows = sellerData.filter((e) =>
-    e?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    e.fullname.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const paginatedRows = filteredRows.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
-    
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex);
 
-    const handleUpdate = async (value, id) => {
-
-       
-    
-        // setSelectedOption(value)
-       
-    
-        await axios.put("http://103.174.103.122:3000/auth/active-seller", {statusActive:value, userId:id}, { headers  : {
-                // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-              'authorization':  localStorage.getItem('logintoken'), // Add any authentication headers if needed
-            }})
-              .then(response => {
-                // Handle success
-                  console.log('Response:', response);
-            
-                getSellerApi()
-                openSnackbar("status changed successfully", "success")
-              })  
-              .catch(error => {
-                // Handle error
-                console.error('Error:', error);
-              });
-         
-    }
-    
-
-    const cancelFunction = async () => {
-      await  handleApprove(true, idCloseDialogue)
-        handleOpen()
-        getSellerApi()
-    }
-
-    const handleApprove = async (value, id) => {
-       setIdCloseDialogue(id)
-      setValCloseDialogue(value)
-      
-        if (value == false) {
-            handleOpen() 
-        }
-       
-        
-        await axios.put("http://103.174.103.122:3000/auth/approve-seller", {approve:value, userId:id}, { headers  : {
-                // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-              'authorization':  localStorage.getItem('logintoken'), // Add any authentication headers if needed
-            }})
-              .then(response => {
-                // Handle success
-                // console.log('Response:', response);
-                getSellerApi()
-                openSnackbar("Status changed successfully", "success")
-              })  
-              .catch(error => {
-                // Handle error
-                console.error('Error:', error);
-              })    
-    }
-    const handleInputChange = (event) => {
-        setInputValue(event.target.value);
-      };
-    
-    
-    const handleFalse = async () => {
-      
-        
-        await axios.post("http://103.174.103.122:3000/auth/dissa/reason-seller", {reason : inputValue , userId:idCloseDialogue} , { headers  : {
-            // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-          'authorization':  localStorage.getItem('logintoken'), // Add any authentication headers if needed
-        }})
-          .then(response => {
-            // Handle success
-              console.log('Response:', response);
-              //   handleOpen()
-              setInputValue("")
-            getSellerApi()
-            openSnackbar("reason updated successfully", "success")
-          })  
-          .catch(error => {
-            // Handle error
-            console.error('Error:', error);
-          });
-
-        await axios.put("http://103.174.103.122:3000/auth/approve-seller", {approve:true, userId:idCloseDialogue}, { headers  : {
-            // 'Content-Type': 'multipart/form-data', // Adjust the content type based on your API requirements
-          'authorization':  localStorage.getItem('logintoken'), // Add any authentication headers if needed
-        }})
-          .then(response => {
-            // Handle success
-              // console.log('Response:', response);
-              handleOpen()
-            getSellerApi()
-            
-          })  
-          .catch(error => {
-            // Handle error
-            console.error('Error:', error);
-          });
-    }
-
-    const getSellerApi = () => {
-        axios.get('http://103.174.103.122:3000/auth/get-all/seller', {
-            // headers: {
-            //   'authorization': localStorage.getItem('logintoken')},
-          })
-            .then(function (response) {
-                // handle success
-              setSellerData(response.data)
-              
-            //   console.log("responseqq", response.data);
-            })
-            .catch(function (error) {
-              // handle error
-              console.log(error);
-            }) 
-    }
-
-    useEffect(() => {
-      
-        
-        getSellerApi()
-        
-    }, [])
-
-    
-  
- 
-
-    useEffect(() => {
-        axios.get('http://103.174.103.122:3000/auth/category-getall', {
-            headers: {
-              'authorization': localStorage.getItem('logintoken')},
-          })
-            .then(function (response) {
-                // handle success
-                setCatData(response.data.data)
-              // console.log("responseCat", response);
-            })
-            .catch(function (error) {
-              // handle error
-              console.log(error);
-            }) 
-
-    }, [])
+  // ----------------------------------------------Pagination and Search Query section ENDS-----------------------------------------------------
 
   return (
-
     <>
-      <div className='px-[20px]  container mx-auto'>
-          <div className=' py-[10px] flex flex-col space-y-5'>
-            <div className='flex flex-col space-y-1'>
-              <span className='text-[30px] text-[#101828] font-[500]'>Seller&apos;s List</span>
-              {/* <span className='text-[#667085] font-[400] text-[16px]'>Effortlessly organize your category offerings with intuitive Category Setup for a seamless and structured e-commerce experience.</span> */}
+      <div className="px-[20px]  container mx-auto">
+        <div className=" py-[10px] flex flex-col space-y-5">
+          <div className="flex flex-col space-y-1">
+            <span className="text-[30px] text-[#101828] font-[500]">
+              Seller&apos;s List
+            </span>
+            {/* <span className='text-[#667085] font-[400] text-[16px]'>Effortlessly organize your category offerings with intuitive Category Setup for a seamless and structured e-commerce experience.</span> */}
+          </div>
+
+          <div className="flex flex-col space-y-3 border border-[#EAECF0] rounded-[8px] p-[10px]">
+            <div className="flex items-center justify-between">
+              <div className="flex space-x-2 items-center">
+                <span className="text-[18px] font-[500] text-[#101828]">
+                  Seller&apos;s Data
+                </span>
+                {/*-------------------------------------------------------------------- {categoryData.length} */}
+                <span className="px-[10px] py-[5px] bg-[#ac87bf] rounded-[16px] text-[12px] text-[#fff]">
+                  {sellerData.length} Sellers
+                </span>
+              </div>
+              <div className='flex items-center space-x-3 inputText w-[50%]'>
+                <IoSearch className='text-[20px]' />
+                <input
+                  type='text'
+                  className='outline-none focus-none w-full'
+                  placeholder='Search Seller Name here'
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
 
-            <div className='flex flex-col space-y-1 border border-[#EAECF0] rounded-[8px] p-[10px]'>
-              <div className='flex items-center justify-between'>
-                <div className='flex space-x-2 items-center'>
-                <span className='text-[18px] font-[500] text-[#101828]'>Seller&apos;s Data</span>
-                {/*-------------------------------------------------------------------- {categoryData.length} */}
-                  <span className='px-[10px] py-[5px] bg-[#FCF8EE] rounded-[16px] text-[12px] text-[#A1853C]'> products</span>
-              </div>
-
-              <div className='flex items-center space-x-3 inputText w-[50%]'>
-                  <IoSearch className='text-[20px]' />
-                  <input
-                    type='text'
-                    className='outline-none focus-none w-full'
-                    placeholder='Search Category Name here'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-
-             
-              <Paper >
-                <TableContainer component={Paper} sx={{ height: '100%', width: '100%' }}>
-                  <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                      <TableRow className='!bg-[#F9FAFB]'>
+            <Paper>
+              <TableContainer
+                component={Paper}
+                sx={{ height: "100%", width: "100%" }}
+              >
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow className="!bg-[#F9FAFB]">
                       <TableCell style={{ minWidth: 80 }}>SL no</TableCell>
-                      <TableCell style={{ minWidth: 200 }}>ID</TableCell>
                       <TableCell style={{ minWidth: 200 }}> Name</TableCell>
-                        <TableCell style={{ minWidth: 20 }}>Status </TableCell>
-                        <TableCell style={{ minWidth: 200 }}>Approve</TableCell>
-                        <TableCell style={{ minWidth: 200 }}>Reason</TableCell>
-                        <TableCell style={{ minWidth: 200 }}>Role</TableCell>
-                        <TableCell style={{ minWidth: 200 }}>User Name </TableCell>
-                      </TableRow>
-                    </TableHead>
-                   
-                      <TableBody>
-                      {paginatedRows.filter( (item) => item ).map((elem,i) => {
-                          return   <TableRow key={i} >
-                            <TableCell>{ i+1}</TableCell>
-                            <TableCell>{elem?._id}</TableCell>
-                            <TableCell>   {elem?.name}</TableCell>
-                            <TableCell>
-   <Switch defaultChecked={elem.statusActive} onChange={(event)=>handleUpdate( event.target.checked , elem._id)} />
-       </TableCell>
-                            <TableCell>   <Switch defaultChecked={elem.approve} onChange={(event)=>handleApprove( event.target.checked , elem._id)} />
+                      <TableCell style={{ minWidth: 100 }}> Status</TableCell>
+                      <TableCell style={{ minWidth: 150 }}>Email</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>Phone</TableCell>
+                    </TableRow>
+                  </TableHead>
 
-                                  {/* ---------------------- dailogue things ---------------------------------- */}
-
-                                  {/* ---------------------- dailogue things ---------------------------------- */}
+                  {filteredRows.length > 0 ?
+                    <TableBody>
+                      {paginatedRows
+                        .filter((e) => e)
+                        .map((elem, i) => {
+                          return (
+                            <TableRow key={i}>
+                              <TableCell>{startIndex + i + 1}</TableCell>
+                              <TableCell>{elem?.fullname}</TableCell>
+                              <TableCell>
+                                {elem.approved == true ?
+                                  <div className='flex items-center gap-[5px] py-[5px] bg-[#ECFDF3] rounded-[16px] justify-center'>
+                                    <Image src="/images/active.svg" height={10} width={10} alt='active' />
+                                    <span className='text-[#027A48] text-[12px] font-[500]'>Active</span>
+                                  </div> :
+                                  <div className='flex items-center gap-[5px] py-[5px] bg-red-200 rounded-[16px] justify-center'>
+                                    <Image src="/images/inactive.svg" height={10} width={10} alt='active' />
+                                    <span className='text-red-500 text-[12px] font-[500]'>Inactive</span>
+                                  </div>
+                                }
                               </TableCell>
-                            <TableCell>   {elem?.reason}</TableCell>
-                      
-                         <TableCell> {elem?.role}</TableCell>
-                         <TableCell> {elem?.userName}</TableCell>
-                         
-                          
-                              </TableRow>
+                              <TableCell>{elem?.email}</TableCell>
+                              <TableCell>{elem?.phone}</TableCell>
+                            </TableRow>
+                          );
                         })}
-                      </TableBody>  
-                   
-                      {/* <TableRow>
-                        <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No product found</TableCell>
-                      </TableRow> */}
-                  </Table>
-                </TableContainer>
+                    </TableBody>
+                    :
+                    <TableRow>
+                      <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No Seller found</TableCell>
+                    </TableRow>
+                  }
+                </Table>
+              </TableContainer>
             </Paper>
+
             {filteredRows.length > rowsPerPage && (
               <div className="flex justify-center mt-3">
                 <Pagination
@@ -291,54 +184,11 @@ const SellerList = () => {
                 />
               </div>
             )}
-
-          
-              
           </div>
-          
-          <Dialog
-        open={open}
-              // onClose={handleClose}
-              handler={handleOpen}
-            
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-         Add Reason 
-        </DialogTitle>
-        <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                please mentioned here the reason to reject product listing.
-          <TextField
-              fullWidth
-              placeholder="reason"
-                                  variant="outlined"
-                                  
-                                  
-                            
-              value={inputValue}
-              onChange={handleInputChange}
-                />
-                
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-        <Button
-        
-           onClick={()=>cancelFunction()}
-          >
-            Cancel
-          </Button>
-          <Button   onClick={()=>handleFalse()} >
-            <span>Confirm</span>
-          </Button>
-        </DialogActions>
-      </Dialog>
-          </div>        
+        </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default SellerList
+export default SellersList;
