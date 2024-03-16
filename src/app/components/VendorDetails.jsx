@@ -54,7 +54,6 @@ const VendorDetails = () => {
   };
 
   const [vendorData, setvendorData] = useState([]);
-  console.log("vendorData", vendorData);
   useEffect(() => {
     fetchVendorData();
   }, [activeTab]);
@@ -98,7 +97,7 @@ const VendorDetails = () => {
   const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
   const paginatedRows = filteredRows.slice(startIndex, endIndex);
 
-// ---------------------------approve vendor section------------------------------
+  // ---------------------------approve vendor section------------------------------
   const handleApprove = (id) => {
     axios.post(`/api/user/approve-vendor?vendor_id=${id}`, {}, {
       headers: {
@@ -115,10 +114,10 @@ const VendorDetails = () => {
       console.log(err)
     })
   }
-// ---------------------------approve vendor section------------------------------
+  // ---------------------------approve vendor section------------------------------
 
 
-// ---------------------------Reject vendor section------------------------------
+  // ---------------------------Reject vendor section------------------------------
   const [rejectedData, setRejectedData] = useState({})
   const [open, setOpen] = useState(false);
 
@@ -168,7 +167,21 @@ const VendorDetails = () => {
     })
   }
 
-// ---------------------------Reject vendor section------------------------------
+  // ---------------------------Reject vendor section------------------------------
+
+  const [kycData, setKycData] = useState({})
+  console.log(kycData)
+
+  const [open1, setOpen1] = useState(false);
+
+  const handleClickOpen1 = (data) => {
+    setOpen1(true);
+    setKycData(data)
+  };
+  const handleClose1 = () => {
+    setOpen1(false);
+    setKycData({})
+  };
 
   return (
     <>
@@ -184,8 +197,8 @@ const VendorDetails = () => {
           <div className="grid grid-cols-3 gap-4 py-[20px]">
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "WAITING FOR CONFIRMATION"
-                  ? "bg-[#CFAA4C] text-[#fff]"
-                  : "bg-[#f9fafb]"
+                ? "bg-[#CFAA4C] text-[#fff]"
+                : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("WAITING FOR CONFIRMATION")}
             >
@@ -195,8 +208,8 @@ const VendorDetails = () => {
             </div>
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "APPROVED"
-                  ? "bg-[#CFAA4C] text-[#fff]"
-                  : "bg-[#f9fafb]"
+                ? "bg-[#CFAA4C] text-[#fff]"
+                : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("APPROVED")}
             >
@@ -206,8 +219,8 @@ const VendorDetails = () => {
             </div>
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "REJECTED"
-                  ? "bg-[#CFAA4C] text-[#fff]"
-                  : "bg-[#f9fafb]"
+                ? "bg-[#CFAA4C] text-[#fff]"
+                : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("REJECTED")}
             >
@@ -251,10 +264,15 @@ const VendorDetails = () => {
                     <TableRow className="!bg-[#F9FAFB]">
                       <TableCell style={{ minWidth: 80 }}>SL no</TableCell>
                       <TableCell style={{ minWidth: 200 }}>Name</TableCell>
-                      <TableCell style={{ minWidth: 200 }}>Approve</TableCell>
+                      <TableCell style={{ minWidth: 200 }}>Status</TableCell>
+                      {activeTab === "REJECTED" && (
+                        <TableCell style={{ minWidth: 20 }}>
+                          Rejected Reason
+                        </TableCell>
+                      )}
                       <TableCell style={{ minWidth: 20 }}>Shop Name</TableCell>
                       <TableCell style={{ minWidth: 20 }}>
-                        Registred No
+                        Phone No
                       </TableCell>
                       <TableCell style={{ minWidth: 20 }}>
                         Name of business
@@ -319,19 +337,23 @@ const VendorDetails = () => {
                                   </TableCell>
                                 )}
 
+                              {activeTab === "REJECTED" && (
+                                <TableCell>
+                                  {elem?.rejected_reason || 'N/A'}
+                                </TableCell>
+                              )}
                               <TableCell>
-                                {elem?.vendor?.shop_name}
+                                {elem?.vendor_detail?.shop_name || 'N/A'}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendor_details.mobile}
+                                {elem?.vendor_detail?.mobile || 'N/A'}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendor_details.bussiness_name}
+                                {elem?.vendor_detail?.bussiness_name || 'N/A'}
                               </TableCell>
-
                               <TableCell>
                                 <Button
-                                  onClick={() => handleDialogData(elem?._id)}
+                                  onClick={() => handleClickOpen1(elem)}
                                 >
                                   View
                                 </Button>
@@ -342,7 +364,7 @@ const VendorDetails = () => {
                     </TableBody>
                     :
                     <TableRow>
-                      <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No product found</TableCell>
+                      <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No Vendor found</TableCell>
                     </TableRow>
                   }
                 </Table>
@@ -393,6 +415,47 @@ const VendorDetails = () => {
               </span>
               <span autoFocus className='bg-[#CFAA4C] rounded-[8px] border-[#CFAA4C] w-[50%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' onClick={handleReject}>
                 Reject Vendor
+              </span>
+            </DialogActions>
+          </BootstrapDialog>
+
+
+          <BootstrapDialog
+            onClose={handleClose1}
+            aria-labelledby="customized-dialog-title"
+            open={open1}
+            fullWidth
+          >
+            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+              KYC Details
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleClose1}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <IoClose />
+            </IconButton>
+            <DialogContent dividers>
+            <div className="grid grid-cols-2 gap-4"> 
+              <div className='flex flex-col space-y-2'>
+                <span className='text-[#344054] text-[14px] font-[500]'>First Name</span>
+                <span>{kycData.first_name}</span>
+              </div>
+              <div className='flex flex-col space-y-2'>
+                <span className='text-[#344054] text-[14px] font-[500]'>Last Name</span>
+                <span>{kycData.last_name}</span>
+              </div>
+            </div>
+            </DialogContent>
+            <DialogActions className='justify-between'>
+              <span autoFocus onClick={handleClose1} className='bg-[#CFAA4C] rounded-[8px] border-[#CFAA4C] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' >
+                Close
               </span>
             </DialogActions>
           </BootstrapDialog>
