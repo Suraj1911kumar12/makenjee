@@ -183,6 +183,28 @@ const VendorDetails = () => {
     setKycData({})
   };
 
+  const [clickedImage, setClickedImage] = useState(null);
+  console.log(clickedImage)
+
+  const handleAadhaarImageClick = () => {
+    setClickedImage(kycData.vendor_detail?.aadhaar_image);
+  };
+  
+  const handleCINImageClick = () => {
+    setClickedImage(kycData.vendor_detail?.cin_image);
+  };
+  
+  const handleGSTINImageClick = () => {
+    setClickedImage(kycData.vendor_detail?.gstin_image);
+  };
+
+  const handleImageClick = (image) => {
+    setClickedImage(image);
+  };
+
+  const handleCloseImageDialog = () => {
+    setClickedImage(null);
+  };
   return (
     <>
       <div className="px-[20px]  container mx-auto">
@@ -197,7 +219,7 @@ const VendorDetails = () => {
           <div className="grid grid-cols-3 gap-4 py-[20px]">
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "WAITING FOR CONFIRMATION"
-                ? "bg-[#CFAA4C] text-[#fff]"
+                ? "bg-[#ac87bf] text-[#fff]"
                 : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("WAITING FOR CONFIRMATION")}
@@ -208,7 +230,7 @@ const VendorDetails = () => {
             </div>
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "APPROVED"
-                ? "bg-[#CFAA4C] text-[#fff]"
+                ? "bg-[#ac87bf] text-[#fff]"
                 : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("APPROVED")}
@@ -219,7 +241,7 @@ const VendorDetails = () => {
             </div>
             <div
               className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "REJECTED"
-                ? "bg-[#CFAA4C] text-[#fff]"
+                ? "bg-[#ac87bf] text-[#fff]"
                 : "bg-[#f9fafb]"
                 }`}
               onClick={() => handleTabChange("REJECTED")}
@@ -237,9 +259,8 @@ const VendorDetails = () => {
                   Vendor&apos;s Data
                 </span>
                 {/*-------------------------------------------------------------------- {categoryData.length} */}
-                <span className="px-[10px] py-[5px] bg-[#FCF8EE] rounded-[16px] text-[12px] text-[#A1853C]">
-                  {" "}
-                  details
+                <span className="px-[10px] py-[5px] bg-[#ac87bf] rounded-[16px] text-[12px] text-[#fff]">
+                  {vendorData.length} details
                 </span>
               </div>
 
@@ -413,7 +434,7 @@ const VendorDetails = () => {
               <span onClick={handleClose} className='px-[18px] py-[10px] border border-[#D0D5DD] rounded-[8px] w-[50%] text-center cursor-pointer'>
                 Close
               </span>
-              <span autoFocus className='bg-[#CFAA4C] rounded-[8px] border-[#CFAA4C] w-[50%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' onClick={handleReject}>
+              <span autoFocus className='bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[50%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' onClick={handleReject}>
                 Reject Vendor
               </span>
             </DialogActions>
@@ -441,23 +462,159 @@ const VendorDetails = () => {
             >
               <IoClose />
             </IconButton>
-            <DialogContent dividers>
-            <div className="grid grid-cols-2 gap-4"> 
-              <div className='flex flex-col space-y-2'>
-                <span className='text-[#344054] text-[14px] font-[500]'>First Name</span>
-                <span>{kycData.first_name}</span>
+            <DialogContent dividers className="flex flex-col space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>First Name</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.first_name || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Last Name</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.last_name || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Mobile</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.mobile || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Alt Mobile</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.alt_mobile || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Email</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8]">{kycData.vendor_detail?.email || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Service Type</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.service_type || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Address</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.address || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>City</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.city || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Pincode</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.pincode || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Entity Type</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.entity_type || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Aadhaar Number</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8]">{kycData.vendor_detail?.aadhar || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Aadhaar Image</span>
+                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} className="cursor-pointer"/>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>CIN Number</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.cin || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>CIN Image</span>
+                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Number</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.gstin || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Image</span>
+                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>PAN Number</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.pan || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>PAN Image</span>
+                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Name</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_name || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Image</span>
+                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Location</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_location || 'N/A'}</span>
+                </div>
+                <div className='flex flex-col space-y-2'>
+                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Description</span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_unique_desc || 'N/A'}</span>
+                </div>
               </div>
-              <div className='flex flex-col space-y-2'>
-                <span className='text-[#344054] text-[14px] font-[500]'>Last Name</span>
-                <span>{kycData.last_name}</span>
+              <div className="flex flex-col space-y-2">
+                <span className='text-[#344054] text-[14px] font-[500]'>Portfolio Images</span>
+                <div className="grid grid-cols-2 gap-4">
+                  {kycData.vendor_detail?.portfolio_images?.length > 0 ?
+                    <>
+                      {kycData.vendor_detail?.portfolio_images?.map((image, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col space-y-2 cursor-pointer"
+                          onClick={() => handleImageClick(image)}
+                        >
+                          <Image src="/images/logo.png" alt="portfolio_image" height={50} width={50} />
+                        </div>
+                      ))}
+                    </>
+                    : <span className="text-[13px] font-[500] text-[#334054b8] capitalize">No Portfolio images</span>
+                  }
+                </div>
               </div>
-            </div>
             </DialogContent>
             <DialogActions className='justify-between'>
-              <span autoFocus onClick={handleClose1} className='bg-[#CFAA4C] rounded-[8px] border-[#CFAA4C] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' >
+              <span autoFocus onClick={handleClose1} className='bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' >
                 Close
               </span>
             </DialogActions>
+          </BootstrapDialog>
+
+
+          {/* Image Preview  Dialog*/}
+          <BootstrapDialog
+            onClose={handleCloseImageDialog}
+            aria-labelledby="image-dialog-title"
+            open={!!clickedImage}
+            fullScreen
+          >
+            <DialogTitle sx={{ m: 0, p: 2 }} id="image-dialog-title">
+              Image Preview
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseImageDialog}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <IoClose />
+            </IconButton>
+            <DialogContent dividers className="flex justify-center">
+              {clickedImage && <Image src='/images/product.svg' alt="clicked_image" height={200} width={200} />}
+            </DialogContent>
+            {/* <DialogActions>
+              <span
+                autoFocus
+                onClick={handleCloseImageDialog}
+                className="bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70"
+              >
+                Close
+              </span>
+            </DialogActions> */}
           </BootstrapDialog>
         </div>
       </div>
