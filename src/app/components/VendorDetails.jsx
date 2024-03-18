@@ -186,16 +186,24 @@ const VendorDetails = () => {
   const [clickedImage, setClickedImage] = useState(null);
   console.log(clickedImage)
 
-  const handleAadhaarImageClick = () => {
-    setClickedImage(kycData.vendor_detail?.aadhaar_image);
+  const handleAadharImageClick = (image) => {
+    setClickedImage(image);
   };
-  
-  const handleCINImageClick = () => {
-    setClickedImage(kycData.vendor_detail?.cin_image);
+
+  const handleCINImageClick = (image) => {
+    setClickedImage(image);
   };
-  
-  const handleGSTINImageClick = () => {
-    setClickedImage(kycData.vendor_detail?.gstin_image);
+
+  const handleGSTINImageClick = (image) => {
+    setClickedImage(image);
+  };
+
+  const handleShopImageClicked = (image) => {
+    setClickedImage(image);
+  };
+
+  const handlePANImageClick = (image) => {
+    setClickedImage(image);
   };
 
   const handleImageClick = (image) => {
@@ -510,7 +518,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Aadhaar Image</span>
-                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} className="cursor-pointer"/>
+                  <Image src={kycData.vendor_detail?.aadhar_image} alt="aadhar_image" onClick={() => handleAadharImageClick(kycData.vendor_detail?.aadhar_image)} height={100} width={100} className="cursor-pointer" />
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>CIN Number</span>
@@ -518,7 +526,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>CIN Image</span>
-                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                  <Image src={kycData.vendor_detail?.cin_image} alt="portfolio_image" height={100} width={100} onClick={() => handleCINImageClick(kycData.vendor_detail?.cin_image)}/>
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Number</span>
@@ -526,7 +534,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Image</span>
-                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                  <Image src={kycData.vendor_detail?.gstin_image} alt="portfolio_image" height={100} width={100} onClick={() => handleGSTINImageClick(kycData.vendor_detail?.gstin_image)}/>
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>PAN Number</span>
@@ -534,7 +542,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>PAN Image</span>
-                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                  <Image src={kycData.vendor_detail?.pan_image} alt="portfolio_image" height={100} width={100} onClick={() => handlePANImageClick(kycData.vendor_detail?.pan_image)}/>
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Name</span>
@@ -542,7 +550,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Image</span>
-                  <Image src='/images/logo.png' alt="portfolio_image" height={50} width={50} />
+                  <Image src={kycData.vendor_detail?.shop_image} alt="portfolio_image" height={100} width={100} onClick={() => handleShopImageClicked(kycData.vendor_detail?.shop_image)}/>
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Location</span>
@@ -562,9 +570,9 @@ const VendorDetails = () => {
                         <div
                           key={index}
                           className="flex flex-col space-y-2 cursor-pointer"
-                          onClick={() => handleImageClick(image)}
+                          onClick={() => handleImageClick(image.image_url)}
                         >
-                          <Image src="/images/logo.png" alt="portfolio_image" height={50} width={50} />
+                          <Image src={image.image_url} alt="portfolio_image" height={100} width={100} />
                         </div>
                       ))}
                     </>
@@ -604,7 +612,7 @@ const VendorDetails = () => {
               <IoClose />
             </IconButton>
             <DialogContent dividers className="flex justify-center">
-              {clickedImage && <Image src='/images/product.svg' alt="clicked_image" height={200} width={200} />}
+              {clickedImage && <Image src={clickedImage} alt="clicked_image" height={500} width={500} className="w-full h-full" objectFit="cover" />}
             </DialogContent>
             {/* <DialogActions>
               <span
