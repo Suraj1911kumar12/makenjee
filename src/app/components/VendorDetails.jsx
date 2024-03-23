@@ -526,7 +526,17 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>CIN Image</span>
-                  <Image src={kycData.vendor_detail?.cin_image} alt="portfolio_image" height={100} width={100} onClick={() => handleCINImageClick(kycData.vendor_detail?.cin_image)}/>
+                  {kycData.vendor_detail?.cin_image ? (
+                    <Image
+                      src={kycData.vendor_detail?.cin_image}
+                      alt="GSTIN Image"
+                      height={100}
+                      width={100}
+                      onClick={() => handleGSTINImageClick(kycData.vendor_detail?.cin_image)}
+                    />
+                  ) : (
+                    <span className="text-[13px] font-[500] text-[#334054b8]">No image available</span>
+                  )}
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Number</span>
@@ -534,7 +544,17 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Image</span>
-                  <Image src={kycData.vendor_detail?.gstin_image} alt="portfolio_image" height={100} width={100} onClick={() => handleGSTINImageClick(kycData.vendor_detail?.gstin_image)}/>
+                  {kycData.vendor_detail?.gstin_image ? (
+                    <Image
+                      src={kycData.vendor_detail.gstin_image}
+                      alt="GSTIN Image"
+                      height={100}
+                      width={100}
+                      onClick={() => handleGSTINImageClick(kycData.vendor_detail.gstin_image)}
+                    />
+                  ) : (
+                    <span className="text-[13px] font-[500] text-[#334054b8]">No image available</span>
+                  )}
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>PAN Number</span>
@@ -542,7 +562,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>PAN Image</span>
-                  <Image src={kycData.vendor_detail?.pan_image} alt="portfolio_image" height={100} width={100} onClick={() => handlePANImageClick(kycData.vendor_detail?.pan_image)}/>
+                  <Image src={kycData.vendor_detail?.pan_image} alt="portfolio_image" height={100} width={100} onClick={() => handlePANImageClick(kycData.vendor_detail?.pan_image)} />
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Name</span>
@@ -550,7 +570,7 @@ const VendorDetails = () => {
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Image</span>
-                  <Image src={kycData.vendor_detail?.shop_image} alt="portfolio_image" height={100} width={100} onClick={() => handleShopImageClicked(kycData.vendor_detail?.shop_image)}/>
+                  <Image src={kycData.vendor_detail?.shop_image} alt="portfolio_image" height={100} width={100} onClick={() => handleShopImageClicked(kycData.vendor_detail?.shop_image)} />
                 </div>
                 <div className='flex flex-col space-y-2'>
                   <span className='text-[#344054] text-[14px] font-[500]'>Shop Location</span>
