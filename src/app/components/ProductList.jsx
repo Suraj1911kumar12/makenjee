@@ -176,17 +176,17 @@ const ProductList = () => {
           </div>
 
           <div className='grid grid-cols-3 gap-4 py-[20px]'>
-            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'WAITING FOR APPROVAL' ? 'bg-[#CFAA4C] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('WAITING FOR APPROVAL')}>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'WAITING FOR APPROVAL' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('WAITING FOR APPROVAL')}>
               <div className='flex justify-between items-center'>
                 <span>Waiting for Approval</span>
               </div>
             </div>
-            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'APPROVED' ? 'bg-[#CFAA4C] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('APPROVED')}>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'APPROVED' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('APPROVED')}>
               <div className='flex justify-between items-center'>
                 <span>Approved Product</span>
               </div>
             </div>
-            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'REJECTED' ? 'bg-[#CFAA4C] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('REJECTED')}>
+            <div className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === 'REJECTED' ? 'bg-[#ac87bf] text-[#fff]' : 'bg-[#f9fafb]'}`} onClick={() => handleTabChange('REJECTED')}>
               <div className='flex justify-between items-center'>
                 <span>Rejected Product</span>
               </div>
@@ -200,7 +200,7 @@ const ProductList = () => {
                   Product&apos;s Data
                 </span>
                 {/*-------------------------------------------------------------------- {categoryData.length} */}
-                <span className="px-[10px] py-[5px] bg-[#FCF8EE] rounded-[16px] text-[12px] text-[#A1853C]">
+                <span className="px-[10px] py-[5px] bg-[#ac87bf] rounded-[16px] text-[12px] text-[#fff]">
                   {pendingProductData.length} products
                 </span>
               </div>
@@ -286,7 +286,7 @@ const ProductList = () => {
                               <TableCell>{elem.fabric}</TableCell>
                               <TableCell> {elem.print_pattern_type}</TableCell>
                               <TableCell>{elem.size_fit}</TableCell>
-                              <TableCell>{elem.seller.fullname}</TableCell>
+                              <TableCell>{elem.seller?.fullname}</TableCell>
                             </TableRow>
                           );
                         })}
