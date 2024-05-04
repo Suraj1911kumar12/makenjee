@@ -407,7 +407,7 @@ const Services = () => {
                         <TableRow key={i} >
                           <TableCell>{startIndex + i + 1}</TableCell>
                           <TableCell>
-                            <Image src={row.image} width={50} height={50} alt={row.category_name} className='rounded-[8px]' />
+                            <Image src={row.image || ''} width={50} height={50} alt={row.category_name} className='rounded-[8px]' />
                           </TableCell>
                           <TableCell>{row.name}</TableCell>
                           <TableCell ><FaRegTrashAlt className='cursor-pointer' onClick={() => deleteService(row)} /></TableCell>
@@ -471,7 +471,7 @@ const Services = () => {
 
             {editData && (
               <div className="relative rounded-[8px]">
-                <Image src={showImageEdit || editData.image} alt='Uploaded Preview' width='100' height={100} className='rounded-[8px]' />
+                <Image src={showImageEdit || editData.image || ''} alt='Uploaded Preview' width='100' height={100} className='rounded-[8px]' />
                 <span onClick={handleRemoveImageEdit} className={`absolute top-[-15px] bg-transparent text-black cursor-pointer ${!showImageEdit ? 'hidden' : 'block'}`}>
                   <IoClose />
                 </span>

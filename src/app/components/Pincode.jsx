@@ -51,7 +51,7 @@ const Pincode = () => {
 
     const fetchPincodeData = useCallback(
         () => {
-            axios.get("/api/service/get-pincode", {
+            axios.get("/api/service-pincode/get-pincode", {
                 headers: {
                     Authorization: localStorage.getItem('mykanjeeAdminToken')
                 }
@@ -132,7 +132,7 @@ const Pincode = () => {
     }
 
     const handleAddpincode = () => {
-        axios.post('/api/service/add-pincode', {
+        axios.post('/api/service-pincode/add-pincode', {
             pincode: getPincode.pincode
         }, {
             headers: {
@@ -186,7 +186,7 @@ const Pincode = () => {
     }
 
     const handleEditPincode = () => {
-        axios.post(`/api/service/edit-pincode`, {
+        axios.post(`/api/service-pincode/edit-pincode`, {
             pincode_id: editData.id,
             pincode: getPincodeEdit.edit_pincode || editData.pincode
         }, {
@@ -213,7 +213,7 @@ const Pincode = () => {
 
     // ----------------------------------------------Change status section Starts-----------------------------------------------------
     const handleSwitchChange = (id) => {
-        axios.post(`/api/service/toggle-status-pincode?pincode_id=${id}`, {}, {
+        axios.post(`/api/service-pincode/toggle-status-pincode?pincode_id=${id}`, {}, {
             headers: {
                 Authorization: localStorage.getItem('mykanjeeAdminToken')
             }
@@ -244,7 +244,7 @@ const Pincode = () => {
             confirmButtonText: "Yes! Delete it"
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.post(`/api/service/delete-pincode?pincode_id=${data.id}`, {}, {
+                axios.post(`/api/service-pincode/delete-pincode?pincode_id=${data.id}`, {}, {
                     headers: {
                         Authorization: localStorage.getItem('mykanjeeAdminToken')
                     }
