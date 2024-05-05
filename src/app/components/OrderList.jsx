@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoCloseCircle } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
@@ -102,6 +102,83 @@ const OrderList = () => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+
+  const [openAssign, setOpenAssign] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+
+  const assignToDelivery = (data) => {
+    setOpenAssign(true);
+    setOrderId(data.id)
+  }
+
+  const handleClose = () => {
+    setOpenAssign(false);
+  };
+
+  const [driverData, setDriverData] = useState([])
+
+  useEffect(() => {
+    let unmounted = false;
+    if (!unmounted) {
+      fetchDriverData()
+    }
+
+    return () => { unmounted = true };
+  }, [])
+
+  const fetchDriverData = useCallback(
+    () => {
+      axios.get("/api/delivery-person/list-delivery-persons", {
+        headers: {
+          Authorization: localStorage.getItem('mykanjeeAdminToken')
+        }
+      })
+        .then((res) => {
+          if (res.data.code == 200) {
+            setDriverData(res.data.data.data)
+          } else if (res.data.message === 'Session expired') {
+            openSnackbar(res.data.message, 'error');
+            router.push('/login')
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          if (err.response && err.response.data.statusCode === 400) {
+            router.push('/login')
+          }
+        })
+    },
+    [],
+  )
+
+
+  const handleAssign = (driverId) => {
+    axios.post(`/api/delivery-person/assign-order-to-delivery-person`, {
+      delivery_person_id: driverId,
+      order_id: orderId
+    },{
+      headers: {
+        Authorization: localStorage.getItem('mykanjeeAdminToken')
+      }
+    })
+      .then((res) => {
+        if (res.data.code == 200) {
+          openSnackbar(res.data.message, 'success')
+          setOpenAssign(false)
+          fetchAllOrderData()
+        } else if (res.data.message === 'Session expired') {
+          openSnackbar(res.data.message, 'error');
+          router.push('/login')
+        }
+      })
+      .catch(err => {
+        console.log(err)
+        if (err.response && err.response.data.statusCode === 400) {
+          router.push('/login')
+        }
+      })
   }
 
   return (
@@ -209,40 +286,40 @@ const OrderList = () => {
                                         id="panel1a-header"
                                         className="p-[0px]"
                                       >
-                                      <div className="flex items-center justify-between w-full">
-                                        {elem?.order_id}
-                                        <span className="text-[10px] font-[600]">Click to Expand / Hide Tab</span>
-                                      </div>
+                                        <div className="flex items-center justify-between w-full">
+                                          {elem?.order_id}
+                                          <span className="text-[10px] font-[600]">Click to Expand / Hide Tab</span>
+                                        </div>
                                       </AccordionSummary>
                                       <AccordionDetails className="p-[0px]">
-                                      <Paper>
-                                        <Table
-                                          component={Paper}
-                                          sx={{ height: "100%", width: "100%" }}>
-                                          <TableHead>
-                                            <TableRow>
-                                              <TableCell style={{ minWidth: 150 }}>Product</TableCell>
-                                              <TableCell style={{ minWidth: 150 }}>Category</TableCell>
-                                              <TableCell style={{ minWidth: 150 }}>Total CGST</TableCell>
-                                              <TableCell style={{ minWidth: 150 }}>Total IGST</TableCell>
-                                              <TableCell style={{ minWidth: 150 }}>Total SGST</TableCell>
-                                              <TableCell style={{ minWidth: 150 }}>Total Price</TableCell>
-                                            </TableRow>
-                                          </TableHead>
-                                          <TableBody>
-                                            {elem.order_details.map((detail, index) => (
-                                              <TableRow key={index}>
-                                                <TableCell>{detail.product.display_name}</TableCell>
-                                                <TableCell>{detail.product.category.category_name}</TableCell>
-                                                <TableCell>{convertInRupee(detail.total_cgst)}</TableCell>
-                                                <TableCell>{convertInRupee(detail.total_igst)}</TableCell>
-                                                <TableCell>{convertInRupee(detail.total_sgst)}</TableCell>
-                                                <TableCell>{convertInRupee(detail.total_price)}</TableCell>
+                                        <Paper>
+                                          <Table
+                                            component={Paper}
+                                            sx={{ height: "100%", width: "100%" }}>
+                                            <TableHead>
+                                              <TableRow>
+                                                <TableCell style={{ minWidth: 150 }}>Product</TableCell>
+                                                <TableCell style={{ minWidth: 150 }}>Category</TableCell>
+                                                <TableCell style={{ minWidth: 150 }}>Total CGST</TableCell>
+                                                <TableCell style={{ minWidth: 150 }}>Total IGST</TableCell>
+                                                <TableCell style={{ minWidth: 150 }}>Total SGST</TableCell>
+                                                <TableCell style={{ minWidth: 150 }}>Total Price</TableCell>
                                               </TableRow>
-                                            ))}
-                                          </TableBody>
-                                        </Table>
-                                      </Paper>
+                                            </TableHead>
+                                            <TableBody>
+                                              {elem.order_details.map((detail, index) => (
+                                                <TableRow key={index}>
+                                                  <TableCell>{detail.product.display_name}</TableCell>
+                                                  <TableCell>{detail.product.category.category_name}</TableCell>
+                                                  <TableCell>{convertInRupee(detail.total_cgst)}</TableCell>
+                                                  <TableCell>{convertInRupee(detail.total_igst)}</TableCell>
+                                                  <TableCell>{convertInRupee(detail.total_sgst)}</TableCell>
+                                                  <TableCell>{convertInRupee(detail.total_price)}</TableCell>
+                                                </TableRow>
+                                              ))}
+                                            </TableBody>
+                                          </Table>
+                                        </Paper>
                                       </AccordionDetails>
                                     </Accordion>
                                   </TableCell>
@@ -254,7 +331,7 @@ const OrderList = () => {
                                   <TableCell> {convertInRupee(elem?.total_product_amount)}</TableCell>
                                   <TableCell> {convertInRupee(elem?.total_amount)}</TableCell>
                                   <TableCell>
-                                    <div className='flex items-center px-[10px] py-[5px] bg-[#ECFDF3] rounded-[16px] justify-center cursor-pointer'>
+                                    <div className='flex items-center px-[10px] py-[5px] bg-[#ECFDF3] rounded-[16px] justify-center cursor-pointer' onClick={() => assignToDelivery(elem)}>
                                       <span className='text-[#027A48] text-[12px] font-[500]'>Assign to Delivery</span>
                                     </div>
                                   </TableCell>
@@ -285,171 +362,33 @@ const OrderList = () => {
             )}
           </div>
 
-          {/* <Dialog
-            open={open}
+          <Dialog
+            open={openAssign}
             onClose={handleClose}
-            scroll={scroll}
             aria-labelledby="scroll-dialog-title"
             aria-describedby="scroll-dialog-description"
-            maxWidth="lg"
+            fullWidth
+
           >
-            <DialogTitle id="scroll-dialog-title">
-              Change Order Status
+            <DialogTitle id="scroll-dialog-title" className="flex justify-between items-center">
+              List of Drivers
+              <IoCloseCircle className="cursor-pointer text-[20px]" onClick={handleClose} />
             </DialogTitle>
-            <DialogContent dividers={scroll === "paper"}>
-              <DialogContentText
-                id="scroll-dialog-description"
-                ref={descriptionElementRef}
-                tabIndex={-1}
-              >
-                <div className="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-xl bg-clip-border">
-                  <table className="w-full text-left table-auto min-w-max">
-                    <thead>
-                      <tr>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Seller Name
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Status
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Select Driver
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Product Name
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Quantity
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Tax Invoice
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Shipping Invoice
-                          </p>
-                        </th>
-                        <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-                          <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                            Commision Invoice
-                          </p>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dialogData?.map((item) => {
-                        return (
-                          <tr key={item}>
-                            {console.log("dialogData", item)}
-                            <td className="p-4">
-                              <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                {item?.product?.sellerName}
-                              </p>
-                            </td>
-                            <td className="p-4">
-                              <Select
-                                size="md"
-                                label="Select Version"
-                                defaultValue={item?.status}
-                                onChange={(event) =>
-                                  handleOrderChange(event, item._id)
-                                }
-                              >
-                                {options.map((option) => (
-                                  <MenuItem
-                                    key={option.id}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </td>
-                            <td className="p-4">
-                              <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">
-                                  Driver
-                                </InputLabel>
-                                <Select
-                                  labelId="demo-simple-select-label"
-                                  id="demo-simple-select"
-                                  defaultValue={item?.driverId}
-                                  label="Driver"
-                                  onChange={(event) => handleDriver(event?.target?.value,item)}
-                                >
-                                  {driverData
-                                    ?.filter((e) => e && e.approve)
-                                    .map((data) => {
-                                      return (
-                                        <MenuItem   key={data?._id} value={data?._id}>
-                                          {data?.name}
-                                        </MenuItem>
-                                      );
-                                    })}
-                                </Select>
-                              </FormControl>
-                            </td>
-                            <td className="p-4">
-                              <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                {item?.product?.productsName}
-                              </p>
-                            </td>
-                            <td className="p-4">{item?.quantity}</td>
-                            <td className="p-4">
-                              <Button
-                                variant="contained"
-                                color="grey"
-                                onClick={() =>
-                                  handleTaxInvoices(item?.sellerId)
-                                }
-                              >
-                                Download{" "}
-                              </Button>
-                            </td>
-                            <td className="p-4">
-                              <Button
-                                variant="contained"
-                                color="grey"
-                                onClick={() =>
-                                  handleShipInvoices(item?.sellerId)
-                                }
-                              >
-                                Download{" "}
-                              </Button>
-                            </td>
-                            <td className="p-4">
-                              <Button
-                                variant="contained"
-                                color="grey"
-                                onClick={handleClose}
-                              >
-                                Download{" "}
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </DialogContentText>
+            <DialogContent dividers>
+              <div className="w-full">
+                <ul>
+                  {driverData && driverData.map(driver => (
+                    <li key={driver.id} className="w-full flex items-center justify-between border-b-[1px] border-[#E5E7EB] p-[10px]">
+                      {driver.name}
+                      <Button onClick={() => handleAssign(driver.id)} color="primary">
+                        Assign
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Back</Button>
-            </DialogActions>
-          </Dialog> */}
+          </Dialog>
         </div>
       </div>
     </>
