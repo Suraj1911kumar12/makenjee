@@ -397,7 +397,7 @@ const Services = () => {
                       <TableCell style={{ minWidth: 80 }}>SL no</TableCell>
                       <TableCell style={{ minWidth: 150 }}>Service image</TableCell>
                       <TableCell style={{ minWidth: 200 }}>Service Name</TableCell>
-                      <TableCell style={{ minWidth: 50 }}>Delete</TableCell>
+                      {/* <TableCell style={{ minWidth: 50 }}>Delete</TableCell> */}
                       <TableCell style={{ minWidth: 50 }}>Edit</TableCell>
                     </TableRow>
                   </TableHead>
@@ -410,7 +410,7 @@ const Services = () => {
                             <Image src={row.image || ''} width={50} height={50} alt={row.category_name} className='rounded-[8px]' />
                           </TableCell>
                           <TableCell>{row.name}</TableCell>
-                          <TableCell ><FaRegTrashAlt className='cursor-pointer' onClick={() => deleteService(row)} /></TableCell>
+                          {/* <TableCell ><FaRegTrashAlt className='cursor-pointer' onClick={() => deleteService(row)} /></TableCell> */}
                           <TableCell><FaEdit className='cursor-pointer' onClick={() => handleEdit(row)} /></TableCell>
                         </TableRow>
                       ))}
