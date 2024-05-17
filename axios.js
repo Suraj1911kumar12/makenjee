@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const instance = axios.create({
     baseURL: 'http://103.174.103.122:3030/',
@@ -13,7 +13,12 @@ const instance = axios.create({
             "Content-Type": "application/json",
         },
     },
-    withCredentials: false,
-})
+    get: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  },
+  withCredentials: false,
+});
 
 export default instance;
