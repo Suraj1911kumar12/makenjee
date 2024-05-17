@@ -32,7 +32,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 import { useSnackbar } from "../SnackbarProvider";
-
+import { useRouter } from 'next/navigation';
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
@@ -43,6 +43,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const ProductList = () => {
+  const router = useRouter();
   const { openSnackbar } = useSnackbar();
 
   const [activeTab, setActiveTab] = useState('WAITING FOR APPROVAL');

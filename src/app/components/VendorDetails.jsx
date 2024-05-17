@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
-import { styled } from '@mui/material/styles';
+import { styled } from "@mui/material/styles";
 import Switch from "@mui/material/Switch";
 import {
   TableContainer,
@@ -35,16 +35,15 @@ import axios from "../../../axios";
 import { useRouter } from "next/navigation";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialogContent-root': {
+  "& .MuiDialogContent-root": {
     padding: theme.spacing(2),
   },
-  '& .MuiDialogActions-root': {
+  "& .MuiDialogActions-root": {
     padding: theme.spacing(1),
   },
 }));
 
 const VendorDetails = () => {
-
   const { openSnackbar } = useSnackbar();
   const router = useRouter();
 
@@ -99,40 +98,46 @@ const VendorDetails = () => {
 
   // ---------------------------approve vendor section------------------------------
   const handleApprove = (id) => {
-    axios.post(`/api/user/approve-vendor?vendor_id=${id}`, {}, {
-      headers: {
-        Authorization: localStorage.getItem('mykanjeeAdminToken')
-      }
-    }).then(res => {
-      if (res.data.status === 'success') {
-        fetchVendorData()
-        openSnackbar(res.data.message, 'success')
-      } else {
-        openSnackbar(res.data.message, 'error')
-      }
-    }).catch(err => {
-      console.log(err)
-    })
-  }
-  // ---------------------------approve vendor section------------------------------
-
+    axios
+      .post(
+        `/api/user/approve-vendor?vendor_id=${id}`,
+        {},
+        {
+          headers: {
+            Authorization: localStorage.getItem("mykanjeeAdminToken"),
+          },
+        }
+      )
+      .then((res) => {
+        if (res.data.status === "success") {
+          fetchVendorData();
+          openSnackbar(res.data.message, "success");
+        } else {
+          openSnackbar(res.data.message, "error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+  // ---------------------------approve vendor section End------------------------------
 
   // ---------------------------Reject vendor section------------------------------
-  const [rejectedData, setRejectedData] = useState({})
+  const [rejectedData, setRejectedData] = useState({});
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = (data) => {
     setOpen(true);
-    setRejectedData(data)
+    setRejectedData(data);
   };
   const handleClose = () => {
     setOpen(false);
-    setRejectedData({})
+    setRejectedData({});
   };
 
   const [getRejectedReason, setGetRejectedReason] = useState({
-    rejected_reason_vendor: ''
-  })
+    rejected_reason_vendor: "",
+  });
 
   const getDataReject = (e) => {
     const { value, name } = e.target;
@@ -140,51 +145,57 @@ const VendorDetails = () => {
     setGetRejectedReason(() => {
       return {
         ...getRejectedReason,
-        [name]: value
-      }
-    })
-  }
-
+        [name]: value,
+      };
+    });
+  };
 
   const handleReject = () => {
-    axios.post(`/api/user/reject-vendor`, {
-      vendor_id: rejectedData.id,
-      rejected_reason: getRejectedReason.rejected_reason_vendor
-    }, {
-      headers: {
-        Authorization: localStorage.getItem('mykanjeeAdminToken')
-      }
-    }).then(res => {
-      if (res.data.status === 'success') {
-        fetchVendorData()
-        openSnackbar(res.data.message, 'success')
-        handleClose()
-      } else {
-        openSnackbar(res.data.message, 'error')
-      }
-    }).catch(err => {
-      console.log(err)
-    })
-  }
+    axios
+      .post(
+        `/api/user/reject-vendor`,
+        {
+          vendor_id: rejectedData.id,
+          rejected_reason: getRejectedReason.rejected_reason_vendor,
+        },
+        {
+          headers: {
+            Authorization: localStorage.getItem("mykanjeeAdminToken"),
+          },
+        }
+      )
+      .then((res) => {
+        if (res.data.status === "success") {
+          fetchVendorData();
+          openSnackbar(res.data.message, "success");
+          handleClose();
+        } else {
+          openSnackbar(res.data.message, "error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   // ---------------------------Reject vendor section------------------------------
 
-  const [kycData, setKycData] = useState({})
-  console.log(kycData)
+  const [kycData, setKycData] = useState({});
+  console.log(kycData);
 
   const [open1, setOpen1] = useState(false);
 
   const handleClickOpen1 = (data) => {
     setOpen1(true);
-    setKycData(data)
+    setKycData(data);
   };
   const handleClose1 = () => {
     setOpen1(false);
-    setKycData({})
+    setKycData({});
   };
 
   const [clickedImage, setClickedImage] = useState(null);
-  console.log(clickedImage)
+  console.log(clickedImage);
 
   const handleAadharImageClick = (image) => {
     setClickedImage(image);
@@ -226,10 +237,11 @@ const VendorDetails = () => {
 
           <div className="grid grid-cols-3 gap-4 py-[20px]">
             <div
-              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "WAITING FOR CONFIRMATION"
-                ? "bg-[#ac87bf] text-[#fff]"
-                : "bg-[#f9fafb]"
-                }`}
+              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${
+                activeTab === "WAITING FOR CONFIRMATION"
+                  ? "bg-[#ac87bf] text-[#fff]"
+                  : "bg-[#f9fafb]"
+              }`}
               onClick={() => handleTabChange("WAITING FOR CONFIRMATION")}
             >
               <div className="flex justify-between items-center">
@@ -237,10 +249,11 @@ const VendorDetails = () => {
               </div>
             </div>
             <div
-              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "APPROVED"
-                ? "bg-[#ac87bf] text-[#fff]"
-                : "bg-[#f9fafb]"
-                }`}
+              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${
+                activeTab === "APPROVED"
+                  ? "bg-[#ac87bf] text-[#fff]"
+                  : "bg-[#f9fafb]"
+              }`}
               onClick={() => handleTabChange("APPROVED")}
             >
               <div className="flex justify-between items-center">
@@ -248,10 +261,11 @@ const VendorDetails = () => {
               </div>
             </div>
             <div
-              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${activeTab === "REJECTED"
-                ? "bg-[#ac87bf] text-[#fff]"
-                : "bg-[#f9fafb]"
-                }`}
+              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${
+                activeTab === "REJECTED"
+                  ? "bg-[#ac87bf] text-[#fff]"
+                  : "bg-[#f9fafb]"
+              }`}
               onClick={() => handleTabChange("REJECTED")}
             >
               <div className="flex justify-between items-center">
@@ -300,9 +314,7 @@ const VendorDetails = () => {
                         </TableCell>
                       )}
                       <TableCell style={{ minWidth: 20 }}>Shop Name</TableCell>
-                      <TableCell style={{ minWidth: 20 }}>
-                        Phone No
-                      </TableCell>
+                      <TableCell style={{ minWidth: 20 }}>Phone No</TableCell>
                       <TableCell style={{ minWidth: 20 }}>
                         Name of business
                       </TableCell>
@@ -310,7 +322,7 @@ const VendorDetails = () => {
                     </TableRow>
                   </TableHead>
 
-                  {filteredRows.length > 0 ?
+                  {filteredRows.length > 0 ? (
                     <TableBody>
                       {paginatedRows
                         .filter((item) => item)
@@ -318,9 +330,7 @@ const VendorDetails = () => {
                           return (
                             <TableRow key={i}>
                               <TableCell>{i + 1}</TableCell>
-                              <TableCell>
-                                {elem?.fullname}
-                              </TableCell>
+                              <TableCell>{elem?.fullname}</TableCell>
 
                               {elem.approved == true &&
                                 activeTab === "APPROVED" && (
@@ -368,22 +378,20 @@ const VendorDetails = () => {
 
                               {activeTab === "REJECTED" && (
                                 <TableCell>
-                                  {elem?.rejected_reason || 'N/A'}
+                                  {elem?.rejected_reason || "N/A"}
                                 </TableCell>
                               )}
                               <TableCell>
-                                {elem?.vendor_detail?.shop_name || 'N/A'}
+                                {elem?.vendor_detail?.shop_name || "N/A"}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendor_detail?.mobile || 'N/A'}
+                                {elem?.vendor_detail?.mobile || "N/A"}
                               </TableCell>
                               <TableCell>
-                                {elem?.vendor_detail?.bussiness_name || 'N/A'}
+                                {elem?.vendor_detail?.bussiness_name || "N/A"}
                               </TableCell>
                               <TableCell>
-                                <Button
-                                  onClick={() => handleClickOpen1(elem)}
-                                >
+                                <Button onClick={() => handleClickOpen1(elem)}>
                                   View
                                 </Button>
                               </TableCell>
@@ -391,11 +399,16 @@ const VendorDetails = () => {
                           );
                         })}
                     </TableBody>
-                    :
+                  ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className='text-center text-[15px] font-bold'>No Vendor found</TableCell>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-[15px] font-bold"
+                      >
+                        No Vendor found
+                      </TableCell>
                     </TableRow>
-                  }
+                  )}
                 </Table>
               </TableContainer>
             </Paper>
@@ -424,7 +437,7 @@ const VendorDetails = () => {
               aria-label="close"
               onClick={handleClose}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 right: 8,
                 top: 8,
                 color: (theme) => theme.palette.grey[500],
@@ -433,21 +446,34 @@ const VendorDetails = () => {
               <IoClose />
             </IconButton>
             <DialogContent dividers>
-              <div className='flex flex-col space-y-2'>
-                <span className='text-[#344054] text-[14px] font-[500]'>Reason to reject</span>
-                <textarea className='inputText' placeholder='cancel' name='rejected_reason_vendor' onChange={getDataReject} />
+              <div className="flex flex-col space-y-2">
+                <span className="text-[#344054] text-[14px] font-[500]">
+                  Reason to reject
+                </span>
+                <textarea
+                  className="inputText"
+                  placeholder="cancel"
+                  name="rejected_reason_vendor"
+                  onChange={getDataReject}
+                />
               </div>
             </DialogContent>
-            <DialogActions className='justify-between'>
-              <span onClick={handleClose} className='px-[18px] py-[10px] border border-[#D0D5DD] rounded-[8px] w-[50%] text-center cursor-pointer'>
+            <DialogActions className="justify-between">
+              <span
+                onClick={handleClose}
+                className="px-[18px] py-[10px] border border-[#D0D5DD] rounded-[8px] w-[50%] text-center cursor-pointer"
+              >
                 Close
               </span>
-              <span autoFocus className='bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[50%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' onClick={handleReject}>
+              <span
+                autoFocus
+                className="bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[50%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70"
+                onClick={handleReject}
+              >
                 Reject Vendor
               </span>
             </DialogActions>
           </BootstrapDialog>
-
 
           <BootstrapDialog
             onClose={handleClose1}
@@ -462,7 +488,7 @@ const VendorDetails = () => {
               aria-label="close"
               onClick={handleClose1}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 right: 8,
                 top: 8,
                 color: (theme) => theme.palette.grey[500],
@@ -472,142 +498,270 @@ const VendorDetails = () => {
             </IconButton>
             <DialogContent dividers className="flex flex-col space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>First Name</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.first_name || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    First Name
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.first_name || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Last Name</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.last_name || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Last Name
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.last_name || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Mobile</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.mobile || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Mobile
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.mobile || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Alt Mobile</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.alt_mobile || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Alt Mobile
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.alt_mobile || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Email</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8]">{kycData.vendor_detail?.email || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Email
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8]">
+                    {kycData.vendor_detail?.email || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Service Type</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.service_type || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Service Type
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.service_type || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Address</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.address || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Address
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.address || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>City</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.city || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    City
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.city || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Pincode</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.pincode || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Pincode
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.pincode || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Entity Type</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.entity_type || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Entity Type
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.entity_type || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Aadhaar Number</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8]">{kycData.vendor_detail?.aadhar || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Aadhaar Number
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8]">
+                    {kycData.vendor_detail?.aadhar || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Aadhaar Image</span>
-                  <Image src={kycData.vendor_detail?.aadhar_image} alt="aadhar_image" onClick={() => handleAadharImageClick(kycData.vendor_detail?.aadhar_image)} height={100} width={100} className="cursor-pointer" />
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Aadhaar Image
+                  </span>
+                  <Image
+                    src={kycData.vendor_detail?.aadhar_image}
+                    alt="aadhar_image"
+                    onClick={() =>
+                      handleAadharImageClick(
+                        kycData.vendor_detail?.aadhar_image
+                      )
+                    }
+                    height={100}
+                    width={100}
+                    className="cursor-pointer"
+                  />
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>CIN Number</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.cin || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    CIN Number
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">
+                    {kycData.vendor_detail?.cin || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>CIN Image</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    CIN Image
+                  </span>
                   {kycData.vendor_detail?.cin_image ? (
                     <Image
                       src={kycData.vendor_detail?.cin_image}
                       alt="GSTIN Image"
                       height={100}
                       width={100}
-                      onClick={() => handleGSTINImageClick(kycData.vendor_detail?.cin_image)}
+                      onClick={() =>
+                        handleGSTINImageClick(kycData.vendor_detail?.cin_image)
+                      }
                     />
                   ) : (
-                    <span className="text-[13px] font-[500] text-[#334054b8]">No image available</span>
+                    <span className="text-[13px] font-[500] text-[#334054b8]">
+                      No image available
+                    </span>
                   )}
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Number</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.gstin || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    GSTIN Number
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">
+                    {kycData.vendor_detail?.gstin || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>GSTIN Image</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    GSTIN Image
+                  </span>
                   {kycData.vendor_detail?.gstin_image ? (
                     <Image
                       src={kycData.vendor_detail.gstin_image}
                       alt="GSTIN Image"
                       height={100}
                       width={100}
-                      onClick={() => handleGSTINImageClick(kycData.vendor_detail.gstin_image)}
+                      onClick={() =>
+                        handleGSTINImageClick(kycData.vendor_detail.gstin_image)
+                      }
                     />
                   ) : (
-                    <span className="text-[13px] font-[500] text-[#334054b8]">No image available</span>
+                    <span className="text-[13px] font-[500] text-[#334054b8]">
+                      No image available
+                    </span>
                   )}
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>PAN Number</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] ">{kycData.vendor_detail?.pan || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    PAN Number
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] ">
+                    {kycData.vendor_detail?.pan || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>PAN Image</span>
-                  <Image src={kycData.vendor_detail?.pan_image} alt="portfolio_image" height={100} width={100} onClick={() => handlePANImageClick(kycData.vendor_detail?.pan_image)} />
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    PAN Image
+                  </span>
+                  <Image
+                    src={kycData.vendor_detail?.pan_image}
+                    alt="portfolio_image"
+                    height={100}
+                    width={100}
+                    onClick={() =>
+                      handlePANImageClick(kycData.vendor_detail?.pan_image)
+                    }
+                  />
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Name</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_name || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Shop Name
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.shop_name || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Image</span>
-                  <Image src={kycData.vendor_detail?.shop_image} alt="portfolio_image" height={100} width={100} onClick={() => handleShopImageClicked(kycData.vendor_detail?.shop_image)} />
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Shop Image
+                  </span>
+                  <Image
+                    src={kycData.vendor_detail?.shop_image}
+                    alt="portfolio_image"
+                    height={100}
+                    width={100}
+                    onClick={() =>
+                      handleShopImageClicked(kycData.vendor_detail?.shop_image)
+                    }
+                  />
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Location</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_location || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Shop Location
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.shop_location || "N/A"}
+                  </span>
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-[#344054] text-[14px] font-[500]'>Shop Description</span>
-                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">{kycData.vendor_detail?.shop_unique_desc || 'N/A'}</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-[#344054] text-[14px] font-[500]">
+                    Shop Description
+                  </span>
+                  <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                    {kycData.vendor_detail?.shop_unique_desc || "N/A"}
+                  </span>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
-                <span className='text-[#344054] text-[14px] font-[500]'>Portfolio Images</span>
+                <span className="text-[#344054] text-[14px] font-[500]">
+                  Portfolio Images
+                </span>
                 <div className="grid grid-cols-2 gap-4">
-                  {kycData.vendor_detail?.portfolio_images?.length > 0 ?
+                  {kycData.vendor_detail?.portfolio_images?.length > 0 ? (
                     <>
-                      {kycData.vendor_detail?.portfolio_images?.map((image, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col space-y-2 cursor-pointer"
-                          onClick={() => handleImageClick(image.image_url)}
-                        >
-                          <Image src={image.image_url} alt="portfolio_image" height={100} width={100} />
-                        </div>
-                      ))}
+                      {kycData.vendor_detail?.portfolio_images?.map(
+                        (image, index) => (
+                          <div
+                            key={index}
+                            className="flex flex-col space-y-2 cursor-pointer"
+                            onClick={() => handleImageClick(image.image_url)}
+                          >
+                            <Image
+                              src={image.image_url}
+                              alt="portfolio_image"
+                              height={100}
+                              width={100}
+                            />
+                          </div>
+                        )
+                      )}
                     </>
-                    : <span className="text-[13px] font-[500] text-[#334054b8] capitalize">No Portfolio images</span>
-                  }
+                  ) : (
+                    <span className="text-[13px] font-[500] text-[#334054b8] capitalize">
+                      No Portfolio images
+                    </span>
+                  )}
                 </div>
               </div>
             </DialogContent>
-            <DialogActions className='justify-between'>
-              <span autoFocus onClick={handleClose1} className='bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70' >
+            <DialogActions className="justify-between">
+              <span
+                autoFocus
+                onClick={handleClose1}
+                className="bg-[#ac87bf] rounded-[8px] border-[#ac87bf] w-[100%] py-[10px] text-center cursor-pointer text-[#fff] hover:opacity-70"
+              >
                 Close
               </span>
             </DialogActions>
           </BootstrapDialog>
-
 
           {/* Image Preview  Dialog*/}
           <BootstrapDialog
@@ -623,7 +777,7 @@ const VendorDetails = () => {
               aria-label="close"
               onClick={handleCloseImageDialog}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 right: 8,
                 top: 8,
                 color: (theme) => theme.palette.grey[500],
@@ -632,7 +786,16 @@ const VendorDetails = () => {
               <IoClose />
             </IconButton>
             <DialogContent dividers className="flex justify-center">
-              {clickedImage && <Image src={clickedImage} alt="clicked_image" height={500} width={500} className="w-full h-full" objectFit="cover" />}
+              {clickedImage && (
+                <Image
+                  src={clickedImage}
+                  alt="clicked_image"
+                  height={500}
+                  width={500}
+                  className="w-full h-full"
+                  objectFit="cover"
+                />
+              )}
             </DialogContent>
             {/* <DialogActions>
               <span
