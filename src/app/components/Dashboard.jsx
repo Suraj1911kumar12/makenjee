@@ -5,6 +5,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from '../../../axios';
+import { useRouter } from 'next/navigation';
+import LoadingSpinner from '../LoadingSpinner';
 
 const options = [
     'Total',
@@ -15,7 +17,9 @@ const options = [
 const ITEM_HEIGHT = 48;
 
 const Dashboard = () => {
+    const router = useRouter();
     const [anchorEl, setAnchorEl] = useState(null);
+    const [isLoading, setLoading] = useState(true);
     const open = Boolean(anchorEl);
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -44,6 +48,7 @@ const Dashboard = () => {
             })
                 .then((res) => {
                     if (res.data.code == 200) {
+                        setLoading(false);
                         setSellerData(res.data.data)
                     }else if (res.data.message === 'Session expired') {
                         router.push('/login')
@@ -59,6 +64,8 @@ const Dashboard = () => {
         [],
     )
     return (
+        <>
+        {(isLoading) ? <LoadingSpinner/> :
         <div className='p-[10px] flex flex-col space-y-10 container mx-auto'>
             <div className='flex flex-col space-y-1'>
                 <span className='text-[30px] text-[#101828] font-[500]'>Welcome back!</span>
@@ -210,7 +217,8 @@ const Dashboard = () => {
 
 
 
-        </div>
+        </div>}
+        </>
     )
 }
 
