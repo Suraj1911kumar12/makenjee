@@ -2,8 +2,12 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import { IoClose, IoCloseCircle } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { DatePicker, TimePicker } from "antd";
+import { Select, Space } from "antd";
 import { FaEdit } from "react-icons/fa";
 import Switch from "@mui/material/Switch";
+import dayjs from "dayjs";
+const format = "HH:mm";
 import {
   TableContainer,
   Table,
@@ -28,19 +32,25 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
-// import Select from '@mui/material/Select';
 import MenuItem from "@mui/material/MenuItem";
 import { useRouter } from "next/navigation";
 import axios from "../../../axios";
 
 const OrderList = () => {
+  const handleChange = (value) => {
+    console.log(`selected ${value}`);
+  };
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
+  const [openReject, setOpenReject] = useState(false);
+  const [openAccept, setOpenAccept] = useState(false);
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryTime, setDeliveryTime] = useState("");
 
+  // const [orderId, setOrderId] = useState();
   const [activeTab, setActiveTab] = useState("ALL ORDERS");
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -77,6 +87,9 @@ const OrderList = () => {
         setIsLoading(false);
       });
   }, [activeTab]);
+  const onChange = (date, dateString) => {
+    console.log(date, dateString);
+  };
 
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
@@ -104,6 +117,7 @@ const OrderList = () => {
   };
 
   const [openAssign, setOpenAssign] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [orderId, setOrderId] = useState(null);
 
   const assignToDelivery = (data) => {
@@ -111,11 +125,96 @@ const OrderList = () => {
     setOrderId(data.id);
   };
 
+  // -------------------------------------------------------- Reject Order API -------------------------------------
+  const orderReject = (e) => {
+    e.preventDefault();
+    // console.log(orderId);
+
+    axios
+      .post(
+        `/api/order/${orderId}/reject`,
+        {
+          rejection_reason: rejectReason,
+        },
+        {
+          headers: {
+            Authorization: localStorage.getItem("mykanjeeAdminToken"),
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.status === "success") {
+          openSnackbar(res.data.message, "success");
+          setOpenReject(false);
+          setRejectReason("");
+          fetchAllOrderData();
+        } else if (res.data.message === "Session expired") {
+          openSnackbar(res.data.message, "error");
+        } else if (res.data.status === "error") {
+          openSnackbar(res.data.message, "error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        if (err.response && err.response.data.statusCode === 400) {
+        }
+      });
+  };
+
+  // --------------------------------------------------------accept Order API -------------------------------------
+
+  const orderAccept = (e) => {
+    e.preventDefault();
+    axios
+      .post(
+        `/api/order/${orderId}/accept`,
+        {
+          expected_pickup_date: deliveryDate,
+          expected_pickup_time: deliveryTime,
+        },
+        {
+          headers: {
+            Authorization: localStorage.getItem("mykanjeeAdminToken"),
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.status === "success") {
+          openSnackbar(res.data.message, "success");
+          setOpenAccept(false);
+          fetchAllOrderData();
+        } else if (res.data.message === "Session expired") {
+          openSnackbar(res.data.message, "error");
+        } else if (res.data.status === "error") {
+          openSnackbar(res.data.message, "error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        if (err.response && err.response.data.statusCode === 400) {
+        }
+      });
+  };
+
+  const handleDeliveryDate = (date, dateString) => {
+    setDeliveryDate(dateString);
+  };
+  const handleDeliveryTime = (time, timeString) => {
+    setDeliveryTime(timeString);
+    // console.log(timeString, "timestring");
+  };
+
+  // ---------------------------------------------------------------------------------------------------------------
+
   const handleClose = () => {
     setOpenAssign(false);
   };
 
   const [driverData, setDriverData] = useState([]);
+
+  // console.log(driverData);
 
   useEffect(() => {
     let unmounted = false;
@@ -127,6 +226,9 @@ const OrderList = () => {
       unmounted = true;
     };
   }, []);
+  const HandleReject = (e) => {
+    setRejectReason(e.target.value);
+  };
 
   const fetchDriverData = useCallback(() => {
     axios
@@ -150,8 +252,9 @@ const OrderList = () => {
         }
       });
   }, []);
-
   const handleAssign = (driverId) => {
+    // console.log(driverId, "driverId");
+
     axios
       .post(
         `/api/delivery-person/assign-order-to-delivery-person`,
@@ -182,7 +285,6 @@ const OrderList = () => {
         }
       });
   };
-
   return (
     <>
       <div className="px-[20px]  container mx-auto overflow-y-scroll">
@@ -253,6 +355,30 @@ const OrderList = () => {
             >
               <div className="flex justify-between items-center">
                 <span>Completed Orders</span>
+              </div>
+            </div>
+            <div
+              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${
+                activeTab === "Assigned Orders"
+                  ? "bg-[#ac87bf] text-[#fff]"
+                  : "bg-[#f9fafb]"
+              }`}
+              onClick={() => handleTabChange("Assigned Orders")}
+            >
+              <div className="flex justify-between items-center">
+                <span>Assigned Orders</span>
+              </div>
+            </div>
+            <div
+              className={`px-[24px] py-[12px] rounded-[8px]  text-[14px] cursor-pointer ${
+                activeTab === "DRIVER REJECTED"
+                  ? "bg-[#ac87bf] text-[#fff]"
+                  : "bg-[#f9fafb]"
+              }`}
+              onClick={() => handleTabChange("DRIVER REJECTED")}
+            >
+              <div className="flex justify-between items-center">
+                <span>Driver Rejected</span>
               </div>
             </div>
           </div>
@@ -334,7 +460,34 @@ const OrderList = () => {
                       <TableCell style={{ minWidth: 200 }}>
                         total Amount
                       </TableCell>
-                      <TableCell style={{ minWidth: 200 }}>Action </TableCell>
+
+                      <TableCell
+                        style={{ minWidth: 200 }}
+                        className={
+                          activeTab === "NEW ORDERS" ||
+                          activeTab === "ACCEPTED ORDERS"
+                            ? "block"
+                            : "hidden"
+                        }
+                      >
+                        Action
+                      </TableCell>
+                      <TableCell
+                        style={{ minWidth: 200 }}
+                        className={
+                          activeTab === "ALL ORDERS" ? "block" : "hidden"
+                        }
+                      >
+                        Status
+                      </TableCell>
+                      <TableCell
+                        style={{ minWidth: 200 }}
+                        className={
+                          activeTab === "REJECTED ORDERS" ? "block" : "hidden"
+                        }
+                      >
+                        Reject Reason
+                      </TableCell>
                     </TableRow>
                   </TableHead>
 
@@ -483,6 +636,16 @@ const OrderList = () => {
                                     {" "}
                                     {convertInRupee(elem?.total_amount)}
                                   </TableCell>
+
+                                  {/* <TableCell
+                                    className={
+                                      activeTab === "ALL ORDERS"
+                                        ? "block"
+                                        : "hidden"
+                                    }
+                                  >
+                                    {" "}
+                                  </TableCell> */}
                                   <TableCell>
                                     {/* <div
                                       className="flex items-center px-[10px] py-[5px] bg-[#ECFDF3] rounded-[16px] justify-center cursor-pointer"
@@ -492,35 +655,120 @@ const OrderList = () => {
                                         Assign to Delivery
                                       </span>
                                     </div> */}
-                                    <div className="dropdown dropdown-hover">
-                                      <div
-                                        tabIndex={0}
-                                        role="button"
-                                        className="btn m-1"
-                                      >
-                                        List of Drivers
-                                      </div>
-                                      <ul
-                                        tabIndex={0}
-                                        className="dropdown-content z-[10] menu p-2 shadow bg-white rounded-box w-52"
-                                      >
-                                        {driverData &&
-                                          driverData.map((driver) => (
-                                            <li
-                                              key={driver.id}
-                                              className=" border-b-[1px] border-[#E5E7EB] p-[10px]"
-                                            >
-                                              <div
-                                                className="btn hover:bg-[#AC87BF] hover:text-white"
-                                                onClick={() =>
-                                                  handleAssign(driver.id)
-                                                }
+                                    <div
+                                      className={
+                                        activeTab === "ACCEPTED ORDERS"
+                                          ? "block"
+                                          : "hidden"
+                                      }
+                                    >
+                                      <Select
+                                        placeholder="Assign Driver"
+                                        onClick={() => {
+                                          setOrderId(elem.id);
+                                        }}
+                                        style={{
+                                          width: 120,
+                                        }}
+                                        onChange={handleAssign}
+                                        options={driverData?.map((res) => {
+                                          // if (res?.is_active == 1)
+                                          return {
+                                            value: res.id,
+                                            label: res.name,
+                                          };
+                                        })}
+                                      />
+
+                                      {/* <div className="dropdown dropdown-hover">
+                                        <div
+                                          tabIndex={0}
+                                          role="button"
+                                          className="btn m-1"
+                                        >
+                                          List of Drivers
+                                        </div>
+                                        <ul
+                                          tabIndex={0}
+                                          className="dropdown-content z-[10] menu p-2 shadow bg-white rounded-box w-52"
+                                        >
+                                          {driverData &&
+                                            driverData.map((driver) => (
+                                              <li
+                                                key={driver.id}
+                                                className=" border-b-[1px] border-[#E5E7EB] p-[10px]"
                                               >
-                                                Assign {driver.name}
-                                              </div>
-                                            </li>
-                                          ))}
-                                      </ul>
+                                                <div
+                                                  className="btn hover:bg-[#AC87BF] hover:text-white"
+                                                  onClick={() =>
+                                                    handleAssign(driver.id)
+                                                  }
+                                                >
+                                                  Assign {driver.name}
+                                                </div>
+                                              </li>
+                                            ))}
+                                        </ul>
+                                      </div> */}
+                                    </div>
+
+                                    <div
+                                      className={
+                                        activeTab === "NEW ORDERS"
+                                          ? "block space-x-1"
+                                          : "hidden"
+                                      }
+                                    >
+                                      <div
+                                        className="btn bg-[#AC87BF] hover:bg-[#AC87BF] text-white hover:opacity-50"
+                                        onClick={() => {
+                                          setOpenAccept(true);
+                                          setOrderId(elem?.id);
+                                        }}
+                                      >
+                                        Accept
+                                      </div>
+                                      <div
+                                        className="btn"
+                                        onClick={() => {
+                                          setOpenReject(true);
+                                          setOrderId(elem?.id);
+                                        }}
+                                      >
+                                        Reject
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={
+                                        activeTab === "ALL ORDERS"
+                                          ? "block space-x-1"
+                                          : "hidden"
+                                      }
+                                    >
+                                      {elem?.accepted != 1 ? (
+                                        elem?.accepted === 0 ? (
+                                          <div className="badge badge-error">
+                                            Rejected
+                                          </div>
+                                        ) : (
+                                          <div className="badge badge-info ">
+                                            Waiting for Approval
+                                          </div>
+                                        )
+                                      ) : (
+                                        <div className="badge badge-success ">
+                                          Accepted
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div
+                                      className={
+                                        activeTab === "REJECTED ORDERS"
+                                          ? "block"
+                                          : "hidden"
+                                      }
+                                    >
+                                      {elem?.rejection_reason}
                                     </div>
                                   </TableCell>
                                 </TableRow>
@@ -594,6 +842,121 @@ const OrderList = () => {
               </div>
             </DialogContent>
           </Dialog> */}
+
+          {/* order reject Modal */}
+          <dialog
+            id="my_modal_3"
+            className={`modal ${openReject ? "modal-open" : ""}`}
+          >
+            <div className="modal-box p-0">
+              <form method="dialog">
+                <div className="head p-5">
+                  <button
+                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setOpenReject(false)}
+                  >
+                    ✕
+                  </button>
+                  <h3 className="font-semibold text-lg">Order Reject Reason</h3>
+                </div>
+                <hr />
+              </form>
+              <form onSubmit={orderReject}>
+                <div className="modal-body p-5">
+                  <textarea
+                    placeholder="Reject reason"
+                    className="textarea textarea-bordered textarea-md w-full my-3"
+                    onChange={HandleReject}
+                    required
+                  ></textarea>
+                </div>
+                <hr />
+                <div className="p-5">
+                  <div className="flex gap-3">
+                    <div
+                      className="btn flex-grow"
+                      onClick={() => setOpenReject(false)}
+                    >
+                      Cancle
+                    </div>
+                    <button
+                      className="btn flex-grow bg-[#AC87BF] hover:bg-[#AC87BF] hover:opacity-75 text-white"
+                      type="submit"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </dialog>
+
+          {/* order accept modal  */}
+
+          <dialog
+            id="my_modal_3"
+            className={`modal ${openAccept ? "modal-open" : ""}`}
+          >
+            <div className="modal-box p-0">
+              <form method="dialog">
+                <div className="head p-5">
+                  <button
+                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setOpenAccept(false)}
+                  >
+                    ✕
+                  </button>
+                  <h3 className="font-semibold text-lg">Order Accept</h3>
+                </div>
+                <hr />
+              </form>
+              <form onSubmit={orderAccept}>
+                <div className="modal-body p-5 space-y-4">
+                  <div className="lable">
+                    <span className="label-text">
+                      Select Expected Delivery Date
+                    </span>
+                  </div>
+                  <DatePicker
+                    onChange={handleDeliveryDate}
+                    disabledDate={(current) => {
+                      return current && current.valueOf() < Date.now();
+                    }}
+                    required
+                  />
+                  <div className="lable">
+                    <span className="label-text">
+                      Select Expected Delivery Time
+                    </span>
+                  </div>
+                  <TimePicker
+                    onChange={handleDeliveryTime}
+                    defaultValue={dayjs("12:08", format)}
+                    format={format}
+                    required
+                  />
+                </div>
+                <hr />
+                <div className="p-5">
+                  <div className="flex gap-3">
+                    <div
+                      className="btn flex-grow"
+                      onClick={() => setOpenAccept(false)}
+                    >
+                      Cancel
+                    </div>
+                    <button
+                      className="btn flex-grow bg-[#AC87BF] hover:bg-[#AC87BF] hover:opacity-75 text-white"
+                      type="submit"
+                      // onClick={() => orderAccept}
+                    >
+                      Accept
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </dialog>
         </div>
       </div>
     </>

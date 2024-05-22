@@ -25,6 +25,7 @@ import { styled } from "@mui/material/styles";
 import Image from "next/image";
 import { useSnackbar } from "../SnackbarProvider";
 import { useRouter } from "next/navigation";
+import { IoMdArrowDropdown } from "react-icons/io";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
     padding: theme.spacing(2),
@@ -48,7 +49,7 @@ const Addons = () => {
   }, [activeTab]);
 
   const [serviceData, setServiceData] = useState();
-  const [serviceName, setServiceName] = useState("");
+  const [serviceName, setServiceName] = useState("Select Service Type");
   const fetchVendorData = useCallback(() => {
     axios
       .get(`/api/vendor-services`, {
@@ -228,7 +229,7 @@ const Addons = () => {
           <div className="m-5">
             <div className="dropdown">
               <div tabIndex={0} role="button" className="btn m-1">
-                Select Service Type
+                {`${serviceName}`} <IoMdArrowDropdown size={25} />
               </div>
               <ul
                 tabIndex={0}
